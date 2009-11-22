@@ -8,6 +8,7 @@ RSYNC_VERSION:=3.0.6
 RSYNC_SOURCE:=rsync-$(RSYNC_VERSION).tar.gz
 RSYNC_SITE:=http://rsync.samba.org/ftp/rsync
 RSYNC_INSTALL_STAGING:=NO
+RSYNC_USE_CONFIG_CACHE:=no
 RSYNC_INSTALL_TARGET:=YES
 RSYNC_CONF_OPT=$(if $(BR2_ENABLE_DEBUG),--enable-debug,--disable-debug)
 ifeq ($(BR2_ENABLE_DEBUG),y)
