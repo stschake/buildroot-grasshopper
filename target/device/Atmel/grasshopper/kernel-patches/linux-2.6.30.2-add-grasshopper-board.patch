@@ -22,6 +22,18 @@ index 35e3bd9..d631314 100644
  
  choice
  	prompt "Boot loader type"
+diff --git a/arch/avr32/Makefile b/arch/avr32/Makefile
+index c21a329..f2e8105 100644
+--- a/arch/avr32/Makefile
++++ b/arch/avr32/Makefile
+@@ -37,6 +37,7 @@ core-$(CONFIG_BOARD_HAMMERHEAD)		+= arch/avr32/boards/hammerhead/
+ core-$(CONFIG_BOARD_FAVR_32)		+= arch/avr32/boards/favr-32/
+ core-$(CONFIG_BOARD_MERISC)		+= arch/avr32/boards/merisc/
+ core-$(CONFIG_BOARD_MIMC200)		+= arch/avr32/boards/mimc200/
++core-$(CONFIG_BOARD_GRASSHOPPER)	+= arch/avr32/boards/grasshopper/
+ core-$(CONFIG_LOADER_U_BOOT)		+= arch/avr32/boot/u-boot/
+ core-y					+= arch/avr32/kernel/
+ core-y					+= arch/avr32/mm/
 diff --git a/arch/avr32/boards/grasshopper/Kconfig b/arch/avr32/boards/grasshopper/Kconfig
 new file mode 100644
 index 0000000..fae5dbe
