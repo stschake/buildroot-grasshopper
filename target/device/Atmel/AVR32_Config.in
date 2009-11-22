@@ -79,4 +79,11 @@ config BR2_TARGET_AVR32_ATNGW100_BASE
 	help
 	  Very simple configuration for the Atmel AVR32 Network Gateway Board.
 
+config BR2_TARGET_AVR32_GRASSHOPPER
+	bool "ICNova Grasshopper board support"
+	depends on BR2_TARGET_AT32AP7000
+	select BR2_PACKAGE_LINUX
+	help
+		The ICNova Grasshopper Board.
+
 endchoice
