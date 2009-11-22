@@ -12,14 +12,13 @@
 
 	Updated/fixed packages: autoconf, busybox, gcc, directfb, dnsmasq,
 	e2fsprogs, festival, gstreamer, gst-plugins-bad, gst-plugins-base,
-	gst-plugins-good, imagemagick, ipkg, iptables, kernel-headers, kismet,
-	libelf, libevent, libglib2, libidn, liblockfile, libmad, libpcap,
-	libupnp, libuuid, lighttpd, ltrace, lua, lzma, mdadm, ncftp, ncurses,
-	netkittelnet, netsnmp, ntfs-3g, openntp, openssl, php, python,
-	quagga, radvd, rsync, samba, sawman, shared-mime-info, speech-tools,
-	sqlite, squashfs, synergy, syslinux, tcpdump, u-boot, util-linux,
-	valgrind, vsftpd, wipe
-
+	gst-plugins-good, imagemagick, ipkg, iptables, iw, kernel-headers,
+	kismet, libelf, libevent, libglib2, libidn, liblockfile, libmad,
+	libpcap, libupnp, libuuid, lighttpd, ltrace, lua, lzma, mdadm, nbd,
+	ncftp, ncurses, netkittelnet, netsnmp, ntfs-3g, openntp, openssl, php,
+	python, quagga, radvd, rsync, samba, sawman, sdl, shared-mime-info,
+	spawn-fcgi, speech-tools, sqlite, squashfs, synergy, syslinux,
+	target-binutils, tcpdump, u-boot, util-linux, valgrind, vsftpd, wipe,
 	wpa-supplicant, xdata_xcursor-themes, zlib
 
 	Removed package: mdnsresponder, mpatrol, gcc 3.4.6 + 4.0.4
@@ -35,20 +34,27 @@
 	#565: libevent: Bump version and clean up makefile
 	#587: Use iptables multipurpose binaries and bump to 1.4.4
 	#593: Missing early check for patch(1)
+	#597: (REOP)  Selecting busybox in buildroot's config clobbers ar ...
 	#609: libmicrohttpd: New package
 	#615: python: Don't delete .py files unless asked
 	#617: netkit/inetd requires RPC and fails to build if RPC is disabled
-	#619: netkittelnet requires netkitbase to install, but there's no dependency
+	#619: netkittelnet requires netkitbase to install, but there's no ...
+	#645: allow to build nbd-server with NBD package
 	#653: [SECURITY] Update php package to version 5.2.11
 	#655: Update sqlite package to version 3.6.18
 	#657: Bug in imagemagick-clean target
+	#663: Add option for NAND flash with 512B Page and 16 kB erasesize ...
 	#665: [PATCH] Samba package
 	#667: [PATCH] e2fsprogs
+	#683: SDL-dfb does not select directfb
+	#701: make install problem with unstripped binaries
 	#703: [SECURITY] Update openssl package to 0.9.8l
+	#705: Bump spawn-fcgi package to 1.6.3
 	#709: Bump lighttpd package to 1.4.24
 	#713: Migrate openntpd package to Makefile.autotools.in
 	#715: Bump libidn package to 1.15 and other fixes
 	#717: Bump dnsmasq to 2.51 and introduce new IDN option
+	#731: Bump iw package to 0.9.17
 
 2009.08, Released August 31th, 2009:
 
