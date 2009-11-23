@@ -4,12 +4,21 @@
 #
 #############################################################
 
-SQLITE_VERSION = 3.6.18
+SQLITE_VERSION = 3.6.20
 SQLITE_SOURCE = sqlite-amalgamation-$(SQLITE_VERSION).tar.gz
 SQLITE_SITE = http://www.sqlite.org
 SQLITE_INSTALL_STAGING = YES
 SQLITE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 SQLITE_LIBTOOL_PATCH = NO
+
+ifneq ($(BR2_LARGEFILE),y)
+# the sqlite configure script fails to define SQLITE_DISABLE_LFS when
+# --disable-largefile is passed, breaking the build. Work around it by
+# simply adding it to CFLAGS for configure instead
+SQLITE_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) -DSQLITE_DISABLE_LFS"
+# changing CFLAGS doesn't work with config.cache
+SQLITE_USE_CONFIG_CACHE = NO
+endif
 
 SQLITE_CONF_OPT =	--enable-shared \
 			--enable-static \

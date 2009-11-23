@@ -1,27 +1,40 @@
 2009.11, Not yet released:
 
+	Fixes all over the tree and new features.
+
+	Cleaned up / Simplified build directory layout. Refer to
+	docs/buildroot.html#using for details.
+
+	Target defconfig files moved to configs/ and listed in 'make help'
+	output.
+
 	Fixed *clean targets. Now clean removes everything generated,
 	so you can do a fresh rebuild. Distclean furthermore removes
 	kbuild tools and .config, bringing the source tree back in a
 	pristine state.
 
-	Toolchain: ARM cortex A8 support, GCC 4.4.2.
+	Toolchain: ARM cortex A8 support, GCC 4.4.2, sensible default
+	soft / hardfloat setting for architecture, ensure target-ldd
+	gets installed.
 
 	New packages: divine, gvfs, libarchive, libmicrohttpd,
 	sdl_sound, swfdec, sysstat
 
-	Updated/fixed packages: autoconf, busybox, gcc, directfb, dnsmasq,
-	e2fsprogs, festival, gstreamer, gst-plugins-bad, gst-plugins-base,
-	gst-plugins-good, imagemagick, ipkg, iptables, iw, kernel-headers,
-	kismet, libelf, libevent, libglib2, libidn, liblockfile, libmad,
-	libpcap, libupnp, libuuid, lighttpd, ltrace, lua, lzma, mdadm, nbd,
-	ncftp, ncurses, netkittelnet, netsnmp, ntfs-3g, openntp, openssl, php,
-	python, quagga, radvd, rsync, samba, sawman, sdl, shared-mime-info,
-	spawn-fcgi, speech-tools, sqlite, squashfs, synergy, syslinux,
-	target-binutils, tcpdump, u-boot, util-linux, valgrind, vsftpd, wipe,
-	wpa-supplicant, xdata_xcursor-themes, zlib
+	Updated/fixed packages: alsa-lib, alsamixergui, autoconf, bootutils,
+	busybox, gcc, directfb, dnsmasq, e2fsprogs, festival, gamin, gperf,
+	gqview, gstreamer, gst-plugins-bad, gst-plugins-base, gst-plugins-good,
+	imagemagick, ipkg, iptables, iw, kernel-headers, kismet, leafpad,
+	libelf, libevent, libglib2, libidn, liblockfile, libmad, libpcap,
+	libupnp, libuuid, libxml2, lighttpd, ltrace, lua, lzma, magiccube4d,
+	matchbox, mdadm, nbd, ncftp, ncurses, netkittelnet, netsnmp,
+	ng-spice-rework, ntfs-3g, openntp, openssl, pcmanfm, php, psmisc,
+	python, quagga, radvd, rpm, rsync, rubix, samba, sawman, sdl,
+	shared-mime-info, sfdisk, spawn-fcgi, speech-tools, sqlite, squashfs,
+	synergy, syslinux, sysklogd, target-binutils, tcpdump, torsmo, u-boot,
+	udpcast, util-linux, valgrind, vsftpd, wipe, wpa-supplicant, x11vnc,
+	xdata_xcursor-themes, xboard, xfsprogs, xstroke, zlib
 
-	Removed package: mdnsresponder, mpatrol, gcc 3.4.6 + 4.0.4
+	Removed package: mdnsresponder, mpatrol, gcc 3.4.6 + 4.0.4, vice
 
 	Issues resolved (http://bugs.uclibc.org):
 
