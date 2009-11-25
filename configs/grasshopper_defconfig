@@ -1,9 +1,9 @@
 #
 # Automatically generated make config: don't edit
-# Sun Nov 22 17:43:53 2009
+# Wed Nov 25 21:17:39 2009
 #
 BR2_HAVE_DOT_CONFIG=y
-BR2_VERSION="2009.11-git"
+BR2_VERSION="2009.11-rc1"
 # BR2_alpha is not set
 # BR2_arm is not set
 # BR2_armeb is not set
@@ -341,7 +341,6 @@ BR2_PACKAGE_LIBICONV=y
 # BR2_PACKAGE_LTP-TESTSUITE is not set
 # BR2_PACKAGE_LTRACE is not set
 # BR2_PACKAGE_MEMSTAT is not set
-# BR2_PACKAGE_NG_SPICE_REWORK is not set
 # BR2_PACKAGE_POPT is not set
 # BR2_PACKAGE_SCREEN is not set
 # BR2_PACKAGE_SHARED_MIME_INFO is not set
@@ -413,6 +412,8 @@ BR2_PACKAGE_LRZSZ=y
 # BR2_PACKAGE_MROUTED is not set
 # BR2_PACKAGE_MUTT is not set
 BR2_PACKAGE_NBD=y
+# BR2_NBD_CLIENT is not set
+# BR2_NBD_SERVER is not set
 BR2_PACKAGE_NCFTP=y
 
 #
@@ -623,21 +624,13 @@ BR2_PACKAGE_LIBGLIB2=y
 #
 # X Window managers
 #
-# BR2_PACKAGE_MATCHBOX is not set
 
 #
 # X applications
 #
-# BR2_PACKAGE_ALSAMIXERGUI is not set
-# BR2_PACKAGE_GQVIEW is not set
 # BR2_PACKAGE_GOB2 is not set
-# BR2_PACKAGE_LEAFPAD is not set
-# BR2_PACKAGE_PCMANFM is not set
 # BR2_PACKAGE_SYLPHEED is not set
-# BR2_PACKAGE_TORSMO is not set
-# BR2_PACKAGE_X11VNC is not set
 # BR2_PACKAGE_XPDF is not set
-# BR2_PACKAGE_XSTROKE is not set
 
 #
 # Compressors / decompressors
@@ -682,11 +675,7 @@ BR2_PACKAGE_ZLIB=y
 # Games
 #
 # BR2_PACKAGE_GNUCHESS is not set
-# BR2_PACKAGE_MAGICCUBE4D is not set
 # BR2_PACKAGE_PRBOOM is not set
-# BR2_PACKAGE_RUBIX is not set
-# BR2_PACKAGE_VICE is not set
-# BR2_PACKAGE_XBOARD is not set
 
 #
 # Target filesystem options
@@ -714,6 +703,7 @@ BR2_TARGET_ROOTFS_EXT2_COPYTO=""
 BR2_TARGET_ROOTFS_JFFS2=y
 # BR2_TARGET_ROOTFS_JFFS2_DATAFLASH_1056 is not set
 # BR2_TARGET_ROOTFS_JFFS2_DATAFLASH_528 is not set
+# BR2_TARGET_ROOTFS_JFFS2_NANDFLASH_512_16K is not set
 # BR2_TARGET_ROOTFS_JFFS2_NANDFLASH_2K_128K is not set
 BR2_TARGET_ROOTFS_JFFS2_FLASH_128=y
 # BR2_TARGET_ROOTFS_JFFS2_FLASH_64 is not set
