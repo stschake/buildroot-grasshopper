@@ -1,0 +1,11 @@
+--- a/configure   2007-10-07 21:49:33.000000000 +0200
++++ b/configure   2009-11-25 21:45:10.000000000 +0100
+@@ -7284,7 +7284,7 @@
+ 
+ if test "$_charset" ; then
+ echocheck "iconv program"
+-iconv -f UTF-8 -t $_charset ${_mp_help} > /dev/null 2>> "$TMPLOG"
++/usr/bin/iconv -f UTF-8 -t $_charset ${_mp_help} > /dev/null 2>> "$TMPLOG"
+ if test "$?" -ne 0 ; then
+   echores "no"
+     echo "No working iconv program found, use "
