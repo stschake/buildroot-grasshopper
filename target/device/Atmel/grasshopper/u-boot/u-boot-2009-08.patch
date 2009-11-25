@@ -69,10 +69,10 @@ index 0000000..9a794e5
 +PLATFORM_LDFLAGS	+= --gc-sections
 diff --git a/board/atmel/grasshopper/grasshopper.c b/board/atmel/grasshopper/grasshopper.c
 new file mode 100644
-index 0000000..3ac2297
+index 0000000..a657b57
 --- /dev/null
 +++ b/board/atmel/grasshopper/grasshopper.c
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,132 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -167,15 +167,19 @@ index 0000000..3ac2297
 +int board_early_init_r(void)
 +{
 +	gd->bd->bi_phy_id[0] = 0x01;
-+	gd->bd->bi_phy_id[1] = 0x03;
 +	return 0;
 +}
 +
 +#ifdef CONFIG_CMD_NET
 +int board_eth_init(bd_t *bi)
 +{
++#define PHY_RESET_PIN_NO 29
++	portmux_select_gpio(PORTMUX_PORT_B, 1<<PHY_RESET_PIN_NO, PORTMUX_DIR_OUTPUT | PORTMUX_DRIVE_LOW);
++	udelay(100);
++	pio_set_output_value(GPIO_PIN_PB(PHY_RESET_PIN_NO), 1);
++	udelay(1000);
++
 +	macb_eth_initialize(0, (void *)MACB0_BASE, bi->bi_phy_id[0]);
-+	macb_eth_initialize(1, (void *)MACB1_BASE, bi->bi_phy_id[1]);
 +	return 0;
 +}
 +#endif
@@ -279,9 +283,65 @@ index 0000000..a7243f2
 +	. = ALIGN(8);
 +	_end = .;
 +}
+diff --git a/fs/ext2/ext2fs.c b/fs/ext2/ext2fs.c
+index d54f60b..4b391d6 100644
+--- a/fs/ext2/ext2fs.c
++++ b/fs/ext2/ext2fs.c
+@@ -178,6 +178,7 @@ int indir1_blkno = -1;
+ uint32_t *indir2_block = NULL;
+ int indir2_size = 0;
+ int indir2_blkno = -1;
++static unsigned int inode_size;
+ 
+ 
+ static int ext2fs_blockgroup
+@@ -212,7 +213,7 @@ static int ext2fs_read_inode
+ 	unsigned int blkoff;
+ 
+ #ifdef DEBUG
+-	printf ("ext2fs read inode %d\n", ino);
++	printf ("ext2fs read inode %d, inode_size %d\n", ino, inode_size);
+ #endif
+ 	/* It is easier to calculate if the first inode is 0.  */
+ 	ino--;
+@@ -222,16 +223,12 @@ static int ext2fs_read_inode
+ 		return (0);
+ 	}
+ 
+-	inodes_per_block = EXT2_BLOCK_SIZE(data) / __le16_to_cpu(sblock->inode_size);
+-
+-#ifdef DEBUG
+-	printf ("ext2fs read inode blkno %d blkoff %d\n", blkno, blkoff);
+-#endif
++	inodes_per_block = EXT2_BLOCK_SIZE(data) / inode_size;
+ 
+ 	blkno = __le32_to_cpu (blkgrp.inode_table_id) +
+ 		(ino % __le32_to_cpu (sblock->inodes_per_group))
+ 		/ inodes_per_block;
+-	blkoff = (ino % inodes_per_block) * __le16_to_cpu (sblock->inode_size);
++	blkoff = (ino % inodes_per_block) * inode_size;
+ #ifdef DEBUG
+ 	printf ("ext2fs read inode blkno %d blkoff %d\n", blkno, blkoff);
+ #endif
+@@ -863,6 +860,15 @@ int ext2fs_mount (unsigned part_length) {
+ 	if (__le16_to_cpu (data->sblock.magic) != EXT2_MAGIC) {
+ 		goto fail;
+ 	}
++	if (__le32_to_cpu(data->sblock.revision_level == 0)) {
++		inode_size = 128;
++	} else {
++		inode_size = __le16_to_cpu(data->sblock.inode_size);
++	}
++#ifdef DEBUG
++	printf("EXT2 rev %d, inode_size %d\n",
++			__le32_to_cpu(data->sblock.revision_level), inode_size);
++#endif
+ 	data->diropen.data = data;
+ 	data->diropen.ino = 2;
+ 	data->diropen.inode_read = 1;
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..d30e80c
+index 0000000..6416014
 --- /dev/null
 +++ b/include/configs/grasshopper.h
 @@ -0,0 +1,181 @@
@@ -358,9 +418,9 @@ index 0000000..d30e80c
 +
 +#define CONFIG_BAUDRATE			115200
 +#define CONFIG_BOOTARGS							\
-+	"console=ttyS0 root=/dev/mtdblock1 rootfstype=jffs2"
++	"console=ttyS0 root=/dev/mmcblk0p1"
 +#define CONFIG_BOOTCOMMAND						\
-+	"fsload; bootm"
++	"mmcinit; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
 +
 +/*
 + * Only interrupt autoboot if <space> is pressed. Otherwise, garbage
@@ -442,7 +502,7 @@ index 0000000..d30e80c
 +
 +#define CONFIG_ENV_IS_IN_FLASH		1
 +#define CONFIG_ENV_SIZE			65536
-+#define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + CONFIG_SYS_FLASH_SIZE - CONFIG_ENV_SIZE)
++#define CONFIG_ENV_ADDR			0x00020000
 +
 +#define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_INTRAM_BASE + CONFIG_SYS_INTRAM_SIZE)
 +
