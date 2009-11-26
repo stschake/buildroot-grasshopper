@@ -60,19 +60,21 @@ index 0000000..9f3849f
 +#########################################################################
 diff --git a/board/atmel/grasshopper/config.mk b/board/atmel/grasshopper/config.mk
 new file mode 100644
-index 0000000..9a794e5
+index 0000000..f8e4ca4
 --- /dev/null
 +++ b/board/atmel/grasshopper/config.mk
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,5 @@
 +TEXT_BASE		= 0x00000000
 +PLATFORM_RELFLAGS	+= -ffunction-sections -fdata-sections
 +PLATFORM_LDFLAGS	+= --gc-sections
++LDSCRIPT		= $(obj)board/atmel/grasshopper/u-boot.lds
++CONFIG_ATMEL_USART	= y
 diff --git a/board/atmel/grasshopper/grasshopper.c b/board/atmel/grasshopper/grasshopper.c
 new file mode 100644
-index 0000000..a657b57
+index 0000000..8c0a259
 --- /dev/null
 +++ b/board/atmel/grasshopper/grasshopper.c
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,137 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -111,13 +113,13 @@ index 0000000..a657b57
 +	.row_bits	= 13,
 +	.col_bits	= 9,
 +	.bank_bits	= 2,
-+	.cas		= 3,
++	.cas		= 2,
 +	.twr		= 2,
 +	.trc		= 7,
 +	.trp		= 2,
 +	.trcd		= 2,
-+	.tras		= 5,
-+	.txsr		= 5,
++	.tras		= 4,
++	.txsr		= 7,
 +	/* 7.81 us */
 +	.refresh_period	= (781 * (SDRAMC_BUS_HZ / 1000)) / 100000,
 +};
@@ -132,7 +134,6 @@ index 0000000..a657b57
 +
 +#if defined(CONFIG_MACB)
 +	portmux_enable_macb0(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
-+	portmux_enable_macb1(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
 +#endif
 +#if defined(CONFIG_MMC)
 +	portmux_enable_mmci(0, PORTMUX_MMCI_4BIT, PORTMUX_DRIVE_LOW);
@@ -166,7 +167,10 @@ index 0000000..a657b57
 +
 +int board_early_init_r(void)
 +{
-+	gd->bd->bi_phy_id[0] = 0x01;
++	gd->bd->bi_phy_id[0] = 0x00;
++#ifdef CONFIG_MACB2
++	gd->bd->bi_phy_id[1] = 0x00;
++#endif
 +	return 0;
 +}
 +
@@ -180,6 +184,9 @@ index 0000000..a657b57
 +	udelay(1000);
 +
 +	macb_eth_initialize(0, (void *)MACB0_BASE, bi->bi_phy_id[0]);
++#ifdef CONFIG_MACB2
++	macb_eth_initialize(1, (void *)MACB1_BASE, bi->bi_phy_id[1]);
++#endif
 +	return 0;
 +}
 +#endif
@@ -341,10 +348,10 @@ index d54f60b..4b391d6 100644
  	data->diropen.inode_read = 1;
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..6416014
+index 0000000..9092b4c
 --- /dev/null
 +++ b/include/configs/grasshopper.h
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,188 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -422,6 +429,9 @@ index 0000000..6416014
 +#define CONFIG_BOOTCOMMAND						\
 +	"mmcinit; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
 +
++#define MTDPARTS_DEFAULT "mtdparts=physmap-flash.0:128k(boot)ro,64k(env)ro,-(root)"
++#define MTDIDS_DEFAULT "nor0=physmap-flash.0"
++
 +/*
 + * Only interrupt autoboot if <space> is pressed. Otherwise, garbage
 + * data on the serial line may interrupt the boot sequence.
@@ -441,6 +451,8 @@ index 0000000..6416014
 + */
 +#define CONFIG_OVERWRITE_ETHADDR_ONCE	1
 +#define CONFIG_NET_MULTI		1
++#define CONFIG_MACB			1
++#define AT32AP700x_CHIP_HAS_MACB
 +
 +/*
 + * BOOTP/DHCP options
@@ -455,6 +467,8 @@ index 0000000..6416014
 + */
 +#include <config_cmd_default.h>
 +
++#define CONFIG_CMD_NET
++#define CONFIG_CMD_NFS
 +#define CONFIG_CMD_ASKENV
 +#define CONFIG_CMD_DHCP
 +#define CONFIG_CMD_EXT2
@@ -502,7 +516,7 @@ index 0000000..6416014
 +
 +#define CONFIG_ENV_IS_IN_FLASH		1
 +#define CONFIG_ENV_SIZE			65536
-+#define CONFIG_ENV_ADDR			0x00020000
++#define CONFIG_ENV_ADDR			0x20000
 +
 +#define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_INTRAM_BASE + CONFIG_SYS_INTRAM_SIZE)
 +
@@ -521,7 +535,7 @@ index 0000000..6416014
 +#define CONFIG_SYS_LONGHELP			1
 +
 +#define CONFIG_SYS_MEMTEST_START		EBI_SDRAM_BASE
-+#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_MEMTEST_START + 0x1f00000)
++#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_MEMTEST_START + 0x700000)
 +
 +#define CONFIG_SYS_BAUDRATE_TABLE { 115200, 38400, 19200, 9600, 2400 }
 +
