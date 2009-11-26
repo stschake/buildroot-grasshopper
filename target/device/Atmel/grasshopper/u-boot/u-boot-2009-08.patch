@@ -60,23 +60,22 @@ index 0000000..9f3849f
 +#########################################################################
 diff --git a/board/atmel/grasshopper/config.mk b/board/atmel/grasshopper/config.mk
 new file mode 100644
-index 0000000..f8e4ca4
+index 0000000..8f2a9c5
 --- /dev/null
 +++ b/board/atmel/grasshopper/config.mk
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,4 @@
 +TEXT_BASE		= 0x00000000
 +PLATFORM_RELFLAGS	+= -ffunction-sections -fdata-sections
 +PLATFORM_LDFLAGS	+= --gc-sections
 +LDSCRIPT		= $(obj)board/atmel/grasshopper/u-boot.lds
-+CONFIG_ATMEL_USART	= y
 diff --git a/board/atmel/grasshopper/grasshopper.c b/board/atmel/grasshopper/grasshopper.c
 new file mode 100644
-index 0000000..62f536a
+index 0000000..c25676c
 --- /dev/null
 +++ b/board/atmel/grasshopper/grasshopper.c
-@@ -0,0 +1,206 @@
+@@ -0,0 +1,129 @@
 +/*
-+ * Copyright (C) 2005-2006 Atmel Corporation
++ * Copyright (C) 2006 Atmel Corporation
 + *
 + * See file CREDITS for list of people who contributed to this
 + * project.
@@ -103,13 +102,8 @@ index 0000000..62f536a
 +#include <asm/arch/clk.h>
 +#include <asm/arch/gpio.h>
 +#include <asm/arch/hmatrix.h>
++#include <asm/arch/portmux.h>
 +#include <netdev.h>
-+
-+#ifdef CONFIG_CMD_NAND
-+#include <nand.h>
-+#include <linux/mtd/mtd.h>
-+#include "../../../cpu/at32ap/hsmc3.h"
-+#endif
 +
 +DECLARE_GLOBAL_DATA_PTR;
 +
@@ -134,114 +128,22 @@ index 0000000..62f536a
 +	/* Enable SDRAM in the EBI mux */
 +	hmatrix_slave_write(EBI, SFR, HMATRIX_BIT(EBI_SDRAM_ENABLE));
 +
-+	gpio_enable_ebi();
-+#ifdef CONFIG_USART0
-+	gpio_enable_usart0();
++	portmux_enable_ebi(32, 23, 0, PORTMUX_DRIVE_HIGH);
++	portmux_enable_usart1(PORTMUX_DRIVE_MIN);
++
++#if defined(CONFIG_MACB)
++	portmux_enable_macb0(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
++	portmux_enable_macb1(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
 +#endif
-+#ifdef CONFIG_USART1
-+	gpio_enable_usart1();
++#if defined(CONFIG_MMC)
++	portmux_enable_mmci(0, PORTMUX_MMCI_4BIT, PORTMUX_DRIVE_LOW);
 +#endif
-+#ifdef CONFIG_USART2
-+	gpio_enable_usart2();
-+#endif
-+#ifdef CONFIG_USART3
-+	gpio_enable_usart3();
-+#endif
-+#ifdef CONFIG_MACB
-+	gpio_select_pio(GPIO_PIN_PB30, GPIOF_OUTPUT);
-+	gpio_set_value(GPIO_PIN_PB30, 0);
-+	gpio_select_pio(GPIO_PIN_PB29, GPIOF_OUTPUT);
-+	gpio_set_value(GPIO_PIN_PB29, 0);
-+	udelay(100);
-+	gpio_set_value(GPIO_PIN_PB29, 1);
-+	gpio_enable_macb0();
-+#endif
-+#ifdef CONFIG_MACB2
-+	gpio_enable_macb1();
-+#endif
-+#ifdef CONFIG_MMC
-+	gpio_enable_mmci();
++#if defined(CONFIG_ATMEL_SPI)
++	portmux_enable_spi0(1 << 0, PORTMUX_DRIVE_LOW);
 +#endif
 +
 +	return 0;
 +}
-+
-+#ifdef CONFIG_CMD_NAND
-+static void icnova_nand_hwctl(struct mtd_info *mtd, int cmd, unsigned int ctrl) {
-+	struct nand_chip *this = mtd->priv;
-+
-+	//putc(0x20); putc(0x08); // SPACE BS
-+	//putc(0x20); putc(0x08); // SPACE BS
-+	if (ctrl & NAND_CTRL_CHANGE) {
-+		if(ctrl & NAND_NCE) {
-+			//printf("NAND_CE ");
-+			gpio_set_value(GPIO_PIN_PE16, 1);
-+			gpio_set_value(CFG_NAND_CE, 0);
-+		} else {
-+			//printf("NAND_NCE");
-+			gpio_set_value(CFG_NAND_CE, 1);
-+			gpio_set_value(GPIO_PIN_PE16, 0);
-+		}
-+	}
-+
-+	if(cmd == NAND_CMD_NONE) {
-+		//printf("\n");
-+		return;
-+	}
-+	//udelay(1000);
-+
-+	//printf("0x%x ", cmd);
-+	if (ctrl & NAND_CLE) {
-+		//printf("CLE\n");
-+		writeb(cmd, uncached(this->IO_ADDR_W + (1 << CFG_NAND_CLE)));
-+	} else {
-+		//printf("ALE\n");
-+		writeb(cmd, uncached(this->IO_ADDR_W + (1 << CFG_NAND_ALE)));
-+	}
-+
-+	return;
-+}
-+
-+static int icnova_nand_rdy(struct mtd_info *mtd) {
-+	int ret;
-+	//udelay(100);
-+	ret = gpio_get_value(CFG_NAND_RDY);
-+	//udelay(20);
-+	return ret;
-+}
-+
-+int board_nand_init(struct nand_chip *nand) {
-+	/* Setup SMC-Timings */
-+	//hsmc3_writel(CYCLE3, 0x00090009);
-+	//hsmc3_writel(PULSE3, 0x04030403);
-+	//hsmc3_writel(SETUP3, 0x00010001);
-+	//hsmc3_writel(MODE3,  0x00020003);
-+	hsmc3_writel(CYCLE3, 0x00090009);
-+	hsmc3_writel(PULSE3, 0x07050705);
-+	hsmc3_writel(SETUP3, 0x00020002);
-+	hsmc3_writel(MODE3,  0x00020003);
-+	// Enable NAND-Logic
-+	hmatrix_slave_write(EBI, SFR, 
-+			hmatrix_slave_read(EBI, SFR) | 
-+			HMATRIX_BIT(EBI_NAND_ENABLE));
-+	
-+
-+	/* Setup GPIO-Lines */
-+	gpio_select_pio(CFG_NAND_CE, GPIOF_OUTPUT);
-+	gpio_select_pio(GPIO_PIN_PE16, GPIOF_OUTPUT);
-+	gpio_set_value(CFG_NAND_CE, 1);
-+	gpio_select_pio(CFG_NAND_RDY, GPIOF_PULLUP);
-+
-+	/* Setup NAND-Struct */
-+	nand->chip_delay = 50;
-+	nand->ecc.mode = NAND_ECC_SOFT;
-+	nand->cmd_ctrl = icnova_nand_hwctl;
-+	nand->dev_ready = icnova_nand_rdy;
-+
-+	return 0;
-+
-+}
-+#endif
 +
 +phys_size_t initdram(int board_type)
 +{
@@ -263,24 +165,44 @@ index 0000000..62f536a
 +	return actual_size;
 +}
 +
-+void board_init_info(void)
++int board_early_init_r(void)
 +{
-+	gd->bd->bi_phy_id[0] = 0x00;
-+#ifdef CONFIG_MACB2
-+	gd->bd->bi_phy_id[1] = 0x00;
-+#endif
++	gd->bd->bi_phy_id[0] = 0x01;
++	gd->bd->bi_phy_id[1] = 0x03;
++	return 0;
 +}
 +
 +#ifdef CONFIG_CMD_NET
 +int board_eth_init(bd_t *bi)
 +{
 +	macb_eth_initialize(0, (void *)MACB0_BASE, bi->bi_phy_id[0]);
-+#ifdef CONFIG_MACB2
 +	macb_eth_initialize(1, (void *)MACB1_BASE, bi->bi_phy_id[1]);
-+#endif
 +	return 0;
 +}
 +#endif
++
++/* SPI chip select control */
++#ifdef CONFIG_ATMEL_SPI
++#include <spi.h>
++
++#define ATNGW100_DATAFLASH_CS_PIN	GPIO_PIN_PA(3)
++
++int spi_cs_is_valid(unsigned int bus, unsigned int cs)
++{
++	return bus == 0 && cs == 0;
++}
++
++void spi_cs_activate(struct spi_slave *slave)
++{
++	gpio_set_value(ATNGW100_DATAFLASH_CS_PIN, 0);
++}
++
++void spi_cs_deactivate(struct spi_slave *slave)
++{
++	gpio_set_value(ATNGW100_DATAFLASH_CS_PIN, 1);
++}
++#endif /* CONFIG_ATMEL_SPI */
++
 diff --git a/board/atmel/grasshopper/u-boot.lds b/board/atmel/grasshopper/u-boot.lds
 new file mode 100644
 index 0000000..a7243f2
@@ -415,12 +337,25 @@ index d54f60b..4b391d6 100644
  	data->diropen.data = data;
  	data->diropen.ino = 2;
  	data->diropen.inode_read = 1;
+diff --git a/include/configs/atngw100.h b/include/configs/atngw100.h
+index 4ed5514..9777ec0 100644
+--- a/include/configs/atngw100.h
++++ b/include/configs/atngw100.h
+@@ -155,7 +155,7 @@
+ 
+ #define CONFIG_ENV_IS_IN_FLASH		1
+ #define CONFIG_ENV_SIZE			65536
+-#define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + CONFIG_SYS_FLASH_SIZE - CONFIG_ENV_SIZE)
++#define CONFIG_ENV_ADDR			(0xa0000000 + CONFIG_SYS_FLASH_SIZE - CONFIG_ENV_SIZE)
+ 
+ #define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_INTRAM_BASE + CONFIG_SYS_INTRAM_SIZE)
+ 
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..17e9336
+index 0000000..7f49d24
 --- /dev/null
 +++ b/include/configs/grasshopper.h
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,181 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -498,9 +433,6 @@ index 0000000..17e9336
 +#define CONFIG_BOOTCOMMAND						\
 +	"mmcinit; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
 +
-+#define MTDPARTS_DEFAULT "mtdparts=physmap-flash.0:128k(boot)ro,64k(env)ro,-(root)"
-+#define MTDIDS_DEFAULT "nor0=physmap-flash.0"
-+
 +/*
 + * Only interrupt autoboot if <space> is pressed. Otherwise, garbage
 + * data on the serial line may interrupt the boot sequence.
@@ -520,8 +452,6 @@ index 0000000..17e9336
 + */
 +#define CONFIG_OVERWRITE_ETHADDR_ONCE	1
 +#define CONFIG_NET_MULTI		1
-+#define CONFIG_MACB			1
-+#define AT32AP700x_CHIP_HAS_MACB
 +
 +/*
 + * BOOTP/DHCP options
@@ -536,8 +466,6 @@ index 0000000..17e9336
 + */
 +#include <config_cmd_default.h>
 +
-+#define CONFIG_CMD_NET
-+#define CONFIG_CMD_NFS
 +#define CONFIG_CMD_ASKENV
 +#define CONFIG_CMD_DHCP
 +#define CONFIG_CMD_EXT2
@@ -606,7 +534,6 @@ index 0000000..17e9336
 +#define CONFIG_SYS_MEMTEST_START		EBI_SDRAM_BASE
 +#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_MEMTEST_START + 0x700000)
 +
-+#define CONFIG_USART0
 +#define CONFIG_SYS_BAUDRATE_TABLE { 115200, 38400, 19200, 9600, 2400 }
 +
 +#endif /* __CONFIG_H */
