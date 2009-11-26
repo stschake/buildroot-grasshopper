@@ -1,0 +1,11 @@
+--- a/tests/Makefile.in	2009-11-26 10:32:27.000000000 +0100
++++ b/tests/Makefile.in	2009-11-26 10:29:55.000000000 +0100
+@@ -219,7 +219,7 @@
+ SUBDIRS = menu
+ TESTS = dot-desktop pixbuf
+ AM_CPPFLAGS = @CHECK_CFLAGS@ -I../libmb @GCC_WARNINGS@ @XLIBS_CFLAGS@ @PANGO_CFLAGS@ @PNG_CFLAGS@
+-AM_LDFLAGS = -L../libmb -lmb
++AM_LDFLAGS = -L../libmb -lmb -lm
+ @HAVE_CHECK_TRUE@dot_desktop_SOURCES = dot-desktop.c
+ @HAVE_CHECK_TRUE@dot_desktop_LDADD = @CHECK_LIBS@
+ @HAVE_CHECK_TRUE@pixbuf_SOURCES = pixbuf.c oh.h

@@ -122,6 +122,7 @@ $(MATCHBOX_SNOTIFY_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_SNOTIFY_SOURCE)
 
 $(MATCHBOX_WM_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_WM_SOURCE)
 	$(MATCHBOX_CAT) $(DL_DIR)/$(MATCHBOX_WM_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	toolchain/patch-kernel.sh $(MATCHBOX_WM_DIR) package/matchbox/ matchbox-window-manager\*.patch
 	touch $(MATCHBOX_WM_DIR)/.unpacked
 
 $(MATCHBOX_SM_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_SM_SOURCE)
