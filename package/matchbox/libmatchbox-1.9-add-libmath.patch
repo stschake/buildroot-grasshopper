@@ -1,0 +1,11 @@
+--- a/configure.ac	2009-11-26 01:11:18.000000000 +0100
++++ b/configure.ac	2009-11-26 01:11:51.000000000 +0100
+@@ -171,7 +171,7 @@
+         if test x$have_png=xyes && test x$have_png_h=xyes; then 
+             AC_DEFINE(USE_PNG, [1], [Use Png])
+ 	    SUPPORTS_PNG=1
+-            PNG_LIBS="-lpng -lz"
++            PNG_LIBS="-lm -lpng -lz"
+             MB_EXTRA_LIBS="$MB_EXTRA_LIBS $XLIBS_LIBS $PNG_LIBS"
+         else
+ 	    AC_MSG_WARN([*** Cannot find PNG, disabling support])
