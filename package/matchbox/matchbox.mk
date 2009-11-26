@@ -147,6 +147,7 @@ $(MATCHBOX_DP_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_DP_SOURCE)
 
 $(MATCHBOX_FK_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_FK_SOURCE)
 	$(MATCHBOX_CAT) $(DL_DIR)/$(MATCHBOX_FK_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	toolchain/patch-kernel.sh $(MATCHBOX_FK_DIR) package/matchbox/ libfakekey\*.patch
 	touch $(MATCHBOX_FK_DIR)/.unpacked
 
 $(MATCHBOX_KB_DIR)/.unpacked: $(DL_DIR)/$(MATCHBOX_KB_SOURCE)
