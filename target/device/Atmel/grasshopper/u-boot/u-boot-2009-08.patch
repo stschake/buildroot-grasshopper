@@ -352,7 +352,7 @@ index 4ed5514..9777ec0 100644
  
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..7f49d24
+index 0000000..d092be2
 --- /dev/null
 +++ b/include/configs/grasshopper.h
 @@ -0,0 +1,181 @@
@@ -429,9 +429,9 @@ index 0000000..7f49d24
 +
 +#define CONFIG_BAUDRATE			115200
 +#define CONFIG_BOOTARGS							\
-+	"console=ttyS0 root=/dev/mmcblk0p1"
++	"console=ttyS0 root=/dev/mmcblk0p1 rootwait"
 +#define CONFIG_BOOTCOMMAND						\
-+	"mmcinit; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
++	"mmc init; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
 +
 +/*
 + * Only interrupt autoboot if <space> is pressed. Otherwise, garbage
@@ -512,7 +512,7 @@ index 0000000..7f49d24
 +#define CONFIG_SYS_SDRAM_BASE			EBI_SDRAM_BASE
 +
 +#define CONFIG_ENV_IS_IN_FLASH		1
-+#define CONFIG_ENV_SIZE			65536
++#define CONFIG_ENV_SIZE			32768
 +#define CONFIG_ENV_ADDR			0x20000
 +
 +#define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_INTRAM_BASE + CONFIG_SYS_INTRAM_SIZE)
