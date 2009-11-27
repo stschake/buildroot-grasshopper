@@ -1,0 +1,15 @@
+--- a/hw/kdrive/src/kmode.c	2008-10-02 23:01:25.000000000 +0200
++++ b/hw/kdrive/src/kmode.c	2009-11-27 17:44:16.000000000 +0100
+@@ -30,6 +30,12 @@
+     /*	H	V	Hz	KHz */
+ 		/*  FP	    BP	    BLANK   POLARITY */
+ 
++    /* 480x272x60hz Mode */
++    {	480,	272,	60,	35000,
++    		    17,     12,     32,     KdSyncNegative,
++	            1,      11,     14,     KdSyncNegative,
++    },
++
+     /* IPAQ modeline:
+      *
+      * Modeline "320x240"      5.7222 320 337 340 352   240 241 244 254"

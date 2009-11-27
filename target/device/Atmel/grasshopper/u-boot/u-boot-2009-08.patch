@@ -70,7 +70,7 @@ index 0000000..8f2a9c5
 +LDSCRIPT		= $(obj)board/atmel/grasshopper/u-boot.lds
 diff --git a/board/atmel/grasshopper/grasshopper.c b/board/atmel/grasshopper/grasshopper.c
 new file mode 100644
-index 0000000..c25676c
+index 0000000..e09a2af
 --- /dev/null
 +++ b/board/atmel/grasshopper/grasshopper.c
 @@ -0,0 +1,129 @@
@@ -132,8 +132,8 @@ index 0000000..c25676c
 +	portmux_enable_usart1(PORTMUX_DRIVE_MIN);
 +
 +#if defined(CONFIG_MACB)
-+	portmux_enable_macb0(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
-+	portmux_enable_macb1(PORTMUX_MACB_MII, PORTMUX_DRIVE_HIGH);
++	portmux_enable_macb0(PORTMUX_MACB_MII, PORTMUX_DRIVE_LOW);
++	portmux_enable_macb1(PORTMUX_MACB_MII, PORTMUX_DRIVE_LOW);
 +#endif
 +#if defined(CONFIG_MMC)
 +	portmux_enable_mmci(0, PORTMUX_MMCI_4BIT, PORTMUX_DRIVE_LOW);
@@ -167,8 +167,8 @@ index 0000000..c25676c
 +
 +int board_early_init_r(void)
 +{
-+	gd->bd->bi_phy_id[0] = 0x01;
-+	gd->bd->bi_phy_id[1] = 0x03;
++	gd->bd->bi_phy_id[0] = 0x00;
++	gd->bd->bi_phy_id[1] = 0x00;
 +	return 0;
 +}
 +
@@ -352,7 +352,7 @@ index 4ed5514..9777ec0 100644
  
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..d092be2
+index 0000000..784e88d
 --- /dev/null
 +++ b/include/configs/grasshopper.h
 @@ -0,0 +1,181 @@
@@ -429,7 +429,7 @@ index 0000000..d092be2
 +
 +#define CONFIG_BAUDRATE			115200
 +#define CONFIG_BOOTARGS							\
-+	"console=ttyS0 root=/dev/mmcblk0p1 rootwait"
++	"console=ttyS0 root=/dev/mmcblk0p1 rootdelay=1"
 +#define CONFIG_BOOTCOMMAND						\
 +	"mmc init; ext2load mmc 0:1 0x10400000 /boot/uImage; bootm"
 +
