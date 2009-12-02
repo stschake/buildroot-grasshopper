@@ -70,10 +70,10 @@ index 0000000..8f2a9c5
 +LDSCRIPT		= $(obj)board/atmel/grasshopper/u-boot.lds
 diff --git a/board/atmel/grasshopper/grasshopper.c b/board/atmel/grasshopper/grasshopper.c
 new file mode 100644
-index 0000000..9836699
+index 0000000..8c3b5d9
 --- /dev/null
 +++ b/board/atmel/grasshopper/grasshopper.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,132 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -173,6 +173,12 @@ index 0000000..9836699
 +#ifdef CONFIG_CMD_NET
 +int board_eth_init(bd_t *bi)
 +{
++	#define PHY_RESET_PIN 29
++	portmux_select_gpio(PORTMUX_PORT_B, 1<<PHY_RESET_PIN, PORTMUX_DIR_OUTPUT | PORTMUX_DRIVE_LOW);
++	udelay(100);
++	pio_set_output_value(GPIO_PIN_PB(PHY_RESET_PIN), 1);
++	udelay(1000);
++
 +	macb_eth_initialize(0, (void *)MACB0_BASE, bi->bi_phy_id[0]);
 +	return 0;
 +}
