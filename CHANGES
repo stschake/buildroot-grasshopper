@@ -1,8 +1,9 @@
-2009.11, Not yet released:
+2009.11, Released December 1st, 2009:
 
 	Additional fixes and cleanups.
 
-	Updated/fixed packages: alsamixergui, fltk, microperl, ncurses, vim
+	Updated/fixed packages: alsamixergui, autoconf, coreutils, fltk,
+	microperl, ncurses, vim
 
 	Issues resolved (http://bugs.uclibc.org):
 
