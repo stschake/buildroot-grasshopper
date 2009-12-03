@@ -1,13 +1,13 @@
-# Patch taken from Tuxxx, note this is probably not the proper way to fix this
---- a/plugins/input_raw.c 2006-08-24 23:02:54.000000000 +0200
-+++ b/plugins/input_raw.c 2008-09-12 18:43:07.000000000 +0200
+# Patch taken from Tuxxx
+--- a/plugins/input-raw.c	2006-08-24 23:02:54.000000000 +0200
++++ b/plugins/input-raw.c	2008-09-12 18:43:07.000000000 +0200
 @@ -62,8 +62,7 @@
-		return -1;
-	}
-
+ 		return -1;
+ 	}
+ 
 -	if (bit & (1 << EV_SYN))
 -		i->using_syn = 1;
 +	i->using_syn = 1;
-
-	return 0;
-}
+ 
+ 	return 0;
+ }
