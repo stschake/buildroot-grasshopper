@@ -538,6 +538,27 @@ index 0000000..c3dd7f0
 +//	return set_irq_type(AT32_EXTINT(3), IRQ_TYPE_EDGE_FALLING);
 +//}
 +//arch_initcall(grasshopper_arch_init);
+diff --git a/drivers/input/touchscreen/ads7846.c b/drivers/input/touchscreen/ads7846.c
+index 2b01e56..d103d88 100644
+--- a/drivers/input/touchscreen/ads7846.c
++++ b/drivers/input/touchscreen/ads7846.c
+@@ -1141,9 +1141,13 @@ static int __devinit ads7846_probe(struct spi_device *spi)
+ 
+ 	if (request_irq(spi->irq, ads7846_irq, IRQF_TRIGGER_FALLING,
+ 			spi->dev.driver->name, ts)) {
+-		dev_dbg(&spi->dev, "irq %d busy?\n", spi->irq);
+-		err = -EBUSY;
+-		goto err_free_gpio;
++		// try no trigger
++		if (request_irq(spi->irq, ads7846_irq, IRQF_TRIGGER_NONE,
++				spi->dev.driver->name, ts)) {	
++			dev_dbg(&spi->dev, "irq %d busy?\n", spi->irq);
++			err = -EBUSY;
++			goto err_free_gpio;
++		}
+ 	}
+ 
+ 	err = ads784x_hwmon_register(spi, ts);
 diff --git a/kernel.patch b/kernel.patch
 new file mode 100644
 index 0000000..a4a356e
