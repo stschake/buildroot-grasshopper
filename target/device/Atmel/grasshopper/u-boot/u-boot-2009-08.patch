@@ -355,10 +355,10 @@ index 4ed5514..9777ec0 100644
  
 diff --git a/include/configs/grasshopper.h b/include/configs/grasshopper.h
 new file mode 100644
-index 0000000..45e2218
+index 0000000..90cbd7b
 --- /dev/null
 +++ b/include/configs/grasshopper.h
-@@ -0,0 +1,182 @@
+@@ -0,0 +1,179 @@
 +/*
 + * Copyright (C) 2006 Atmel Corporation
 + *
@@ -492,9 +492,6 @@ index 0000000..45e2218
 +#define CONFIG_MMC			1
 +#define CONFIG_ATMEL_MCI		1
 +#define CONFIG_ATMEL_SPI		1
-+
-+#define CONFIG_SPI_FLASH		1
-+#define CONFIG_SPI_FLASH_ATMEL		1
 +
 +#define CONFIG_SYS_DCACHE_LINESZ	32
 +#define CONFIG_SYS_ICACHE_LINESZ	32
