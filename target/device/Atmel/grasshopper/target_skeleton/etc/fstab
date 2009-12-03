@@ -1,4 +1,9 @@
 # /etc/fstab: static file system information.
 #
 # <file system>	<mount pt>	<type>		<options>	<dump>	<pass>
-/dev/mtdblock3	/usr		jffs2		defaults	0	0
+#Uncomment for ext2 SD/MMC (rootfs)
+/dev/mmcblk0p1	/		ext2		defaults	0	0
+
+#Uncomment for vfat SD/MMC (data I/O)
+#/dev/mmcblk0p1	/media		vfat		defaults	0	0
+
