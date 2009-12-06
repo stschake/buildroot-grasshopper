@@ -7,6 +7,9 @@ BINUTILS_VERSION:=$(call qstrip,$(BR2_BINUTILS_VERSION))
 
 EXTRA_BINUTILS_CONFIG_OPTIONS=$(call qstrip,$(BR2_EXTRA_BINUTILS_CONFIG_OPTIONS))
 BINUTILS_SITE:=$(BR2_KERNEL_MIRROR)/linux/devel/binutils
+ifeq ($(BINUTILS_VERSION),2.20)
+BINUTILS_SITE:=$(BR2_GNU_MIRROR)/binutils/
+endif
 ifeq ($(BINUTILS_VERSION),2.19.1)
 BINUTILS_SITE:=$(BR2_GNU_MIRROR)/binutils/
 endif
@@ -24,9 +27,6 @@ endif
 BINUTILS_HOST_PREREQ:=
 BINUTILS_TARGET_PREREQ:=
 
-ifeq ($(findstring x3.,x$(GCC_VERSION)),x3.)
-BINUTILS_NO_MPFR:=y
-endif
 ifeq ($(findstring x4.0,x$(GCC_VERSION)),x4.0)
 BINUTILS_NO_MPFR:=y
 endif
