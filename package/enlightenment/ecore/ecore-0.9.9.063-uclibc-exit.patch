@@ -1,0 +1,39 @@
+This fixes the _exit calls to make them uclibc compliant
+===================================================================
+--- a/src/lib/ecore_con/ecore_con_dns.c	2009-12-04 17:36:21.000000000 +0100
++++ b/src/lib/ecore_con/ecore_con_dns.c	2009-12-04 17:36:44.000000000 +0100
+@@ -135,11 +135,15 @@
+ 	     write(fd[1], "", 1);
+ 	  }
+ 	close(fd[1]);
++#ifdef __UCLIBC__
++	 _exit(0);
++#else
+ # ifdef __USE_ISOC99
+ 	_Exit(0);
+ # else
+ 	_exit(0);
+ # endif
++#endif
+      }
+    /* PARENT */
+    cbdata->handler = ecore_event_handler_add(ECORE_EXE_EVENT_DEL, _ecore_con_dns_exit_handler, cbdata);
+===================================================================
+--- a/src/lib/ecore_con/ecore_con_info.c	2009-12-04 17:37:03.000000000 +0100
++++ b/src/lib/ecore_con/ecore_con_info.c	2009-12-04 17:37:13.000000000 +0100
+@@ -240,11 +240,15 @@
+ 	  freeaddrinfo(result);
+ 	err = write(fd[1], "", 1);
+ 	close(fd[1]);
++#ifdef __UCLIBC__
++	 _exit(0);
++#else
+ # ifdef __USE_ISOC99
+ 	_Exit(0);
+ # else
+ 	_exit(0);
+ # endif
++#endif
+      }
+    /* PARENT */
+    cbdata->handler = ecore_event_handler_add(ECORE_EXE_EVENT_DEL, _ecore_con_info_exit_handler, cbdata);

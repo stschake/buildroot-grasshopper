@@ -1,0 +1,6 @@
+ENLIGHTENMENT_SNAPSHOT_DATE = 2009-12-02
+ENLIGHTENMENT_SNAPSHOT_VERSION = 0.9.9.063
+
+ifeq ($(BR2_PACKAGE_ENLIGHTENMENT),y)
+include package/enlightenment/*/*.mk
+endif

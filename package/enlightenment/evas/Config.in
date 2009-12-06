@@ -1,0 +1,7 @@
+config BR2_PACKAGE_EVAS
+	bool "Evas"
+	depends on BR2_PACKAGE_EINA && BR2_PACKAGE_FREETYPE
+	help
+		Evas is a clean and flexible display canvas API. Supports anti-aliased text, smooth super und sub-sampled scaled images, alpha-blend objects and much more.
+
+		http://docs.enlightenment.org/auto/evas/

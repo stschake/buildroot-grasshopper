@@ -1,0 +1,19 @@
+menuconfig BR2_PACKAGE_ENLIGHTENMENT
+	bool "Enlightenment"
+	help
+		Enlightenment is a window manager. Enlightenment is a desktop shell. Enlightenment is the building blocks to create beautiful applications.
+		Enlightenment, or simply e, is a group of people trying to make a new generation of software.
+	
+		http://www.enlightenment.org
+
+if BR2_PACKAGE_ENLIGHTENMENT
+	source package/enlightenment/ecore/Config.in
+	source package/enlightenment/eina/Config.in
+	source package/enlightenment/edje/Config.in
+	source package/enlightenment/eet/Config.in
+	source package/enlightenment/efreet/Config.in
+	source package/enlightenment/elementary/Config.in
+	source package/enlightenment/embryo/Config.in
+	source package/enlightenment/evas/Config.in
+endif
+

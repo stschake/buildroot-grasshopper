@@ -1,0 +1,9 @@
+config BR2_PACKAGE_ECORE
+	bool "Ecore"
+	select BR2_PACKAGE_EVAS
+	depends on BR2_PACKAGE_EINA
+	help
+		The Enlightenment Core
+		
+		http://docs.enlightenment.org/auto/ecore
+

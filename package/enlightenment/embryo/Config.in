@@ -1,0 +1,7 @@
+config BR2_PACKAGE_EMBRYO
+	bool "Embryo"
+	help
+		Embryo is a tiny library designed to interpret limited Small programs compiled by the included compiler, embryo_cc.
+		It is mostly a cleaned up and smaller version of the original Small abstract machine. The compiler is mostly untouched.
+
+		http://docs.enlightenment.org/auto/embryo/

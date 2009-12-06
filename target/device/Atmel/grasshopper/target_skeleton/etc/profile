@@ -5,4 +5,6 @@ export TSLIB_CONSOLEDEVICE=none
 export TSLIB_FBDEVICE=/dev/fb0
 export TSLIB_PLUGINDIR=/usr/lib/ts
 export TSLIB_CALIBFILE=/etc/pointercal
+export ELM_ENGINE=fb
+export ELM_FONT_PATH=/usr/share/fonts
 

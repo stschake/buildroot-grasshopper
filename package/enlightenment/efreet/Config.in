@@ -1,0 +1,7 @@
+config BR2_PACKAGE_EFREET
+	bool "Efreet"
+	depends on BR2_PACKAGE_EINA && BR2_PACKAGE_ECORE
+	help
+		Efreet is a library designed to help apps work several of the Freedesktop.org standards regarding Icons, Desktop files and Menus.
+
+		http://docs.enlightenment.org/auto/efreet/

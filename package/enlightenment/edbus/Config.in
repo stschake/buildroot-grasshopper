@@ -1,0 +1,7 @@
+config BR2_PACKAGE_EDBUS
+	bool "Edbus"
+	depends on BR2_PACKAGE_ECORE && BR2_PACKAGE_DBUS
+	help
+		This is the start of some basic convenience wrappers around dbus to ease integrating dbus with EFL based applications.
+
+		http://docs.enlightenment.org/auto/edbus/
