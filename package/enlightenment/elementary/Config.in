@@ -1,6 +1,6 @@
 config BR2_PACKAGE_ELEMENTARY
 	bool "Elementary"
-	depends on BR2_PACKAGE_ECORE && BR2_PACKAGE_EVAS && BR2_PACKAGE_EDJE && BR2_PACKAGE_LUA
+	depends on BR2_PACKAGE_ECORE && BR2_PACKAGE_EVAS && BR2_PACKAGE_EDJE
 	help
 		This is a VERY SIMPLE toolkit. It is not meant for writing extensive desktop applications (yet). Small simple ones with simple needs.
 

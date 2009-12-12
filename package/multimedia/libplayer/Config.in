@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBPLAYER
+	bool "libplayer"
+	help
+		libplayer provides a generic A/V API that relies on various multimedia player for Linux systems. It currently supports MPlayer, xine VLC and GStreamer only.
+
+		http://libplayer.geexbox.org/

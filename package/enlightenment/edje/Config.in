@@ -1,6 +1,7 @@
 config BR2_PACKAGE_EDJE
 	bool "Edje"
-	depends on BR2_PACKAGE_EVAS && BR2_PACKAGE_ECORE && BR2_PACKAGE_EET && BR2_PACKAGE_LUA && BR2_PACKAGE_EMBRYO && BR2_PACKAGE_EINA
+	select BR2_PACKAGE_LUA
+	depends on BR2_PACKAGE_EVAS && BR2_PACKAGE_ECORE && BR2_PACKAGE_EET && BR2_PACKAGE_EMBRYO && BR2_PACKAGE_EINA
 	help
 		Edje is a complex graphical design & layout library.
 

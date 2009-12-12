@@ -1,6 +1,7 @@
 config BR2_PACKAGE_ECORE
 	bool "Ecore"
 	select BR2_PACKAGE_EVAS
+	select BR2_PACKAGE_LIBCURL
 	depends on BR2_PACKAGE_EINA
 	help
 		The Enlightenment Core
