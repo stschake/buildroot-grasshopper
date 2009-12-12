@@ -440,6 +440,15 @@ external-deps:
 	@$(MAKE) -Bs BR2_WGET=$(TOPDIR)/toolchain/wget-show-external-deps.sh \
 		SPIDER=--spider source
 
+ifeq ($(BR2_CONFIG_CACHE),y)
+# drop configure cache if configuration is changed
+$(BUILD_DIR)/tgt-config.cache: .config
+	rm -f $@
+	touch $@
+
+$(BASE_TARGETS): | $(BUILD_DIR)/tgt-config.cache
+endif
+
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
 all: menuconfig

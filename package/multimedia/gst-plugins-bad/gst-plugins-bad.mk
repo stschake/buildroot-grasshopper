@@ -33,6 +33,19 @@ else
 GST_PLUGINS_BAD_CONF_OPT += --disable-amrparse
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_ASFMUX),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-asfmux
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-asfmux
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_APEXSINK),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-apexsink
+GST_PLUGINS_BAD_DEPENDENCIES += openssl
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-apexsink
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_AUTOCONVERT),y)
 GST_PLUGINS_BAD_CONF_OPT += --enable-autoconvert
 else
@@ -61,6 +74,13 @@ ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_CDXAPARSE),y)
 GST_PLUGINS_BAD_CONF_OPT += --enable-cdxaparse
 else
 GST_PLUGINS_BAD_CONF_OPT += --disable-cdxaparse
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_CDAUDIO),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-cdaudio
+GST_PLUGINS_BAD_DEPENDENCIES += libcdaudio
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-cdaudio
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_DCCP),y)
@@ -99,10 +119,22 @@ else
 GST_PLUGINS_BAD_CONF_OPT += --disable-freeze
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_FREI0R),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-frei0r
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-frei0r
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_H264PARSE),y)
 GST_PLUGINS_BAD_CONF_OPT += --enable-h264parse
 else
 GST_PLUGINS_BAD_CONF_OPT += --disable-h264parse
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_HDVPARSE),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-hdvparse
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-hdvparse
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_LIBRFB),y)
@@ -219,6 +251,12 @@ else
 GST_PLUGINS_BAD_CONF_OPT += --disable-selector
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_SHAPEWIPE),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-shapewipe
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-shapewipe
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_SIREN),y)
 GST_PLUGINS_BAD_CONF_OPT += --enable-siren
 else
@@ -310,6 +348,13 @@ GST_PLUGINS_BAD_CONF_OPT += --enable-sdl
 GST_PLUGINS_BAD_DEPENDENCIES += sdl
 else
 GST_PLUGINS_BAD_CONF_OPT += --disable-sdl
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_TREMOR),y)
+GST_PLUGINS_BAD_CONF_OPT += --enable-ivorbis
+GST_PLUGINS_BAD_DEPENDENCIES += tremor
+else
+GST_PLUGINS_BAD_CONF_OPT += --disable-ivorbis
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BAD_PLUGIN_VCD),y)
