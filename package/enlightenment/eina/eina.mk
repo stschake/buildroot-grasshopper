@@ -12,4 +12,4 @@ EINA_CONF_OPT =
 EINA_DEPENDENCIES = host-pkgconfig
 EINA_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,eina))
+$(eval $(call AUTOTARGETS,package/enlightenment,eina))

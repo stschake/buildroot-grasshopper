@@ -12,4 +12,4 @@ EFREET_CONF_OPT =
 EFREET_DEPENDENCIES = host-pkgconfig eina ecore
 EFREET_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,efreet))
+$(eval $(call AUTOTARGETS,package/enlightenment,efreet))

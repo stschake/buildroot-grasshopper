@@ -12,6 +12,6 @@ ECORE_CONF_OPT = --enable-ecore-fb --enable-ecore-evas --enable-ecore-job --enab
 ECORE_DEPENDENCIES = host-pkgconfig eina evas
 ECORE_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,ecore))
+$(eval $(call AUTOTARGETS,package/enlightenment,ecore))
 
 ECORE_DIR_PREFIX:=package/enlightenment

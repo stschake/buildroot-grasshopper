@@ -12,4 +12,4 @@ EDJE_CONF_OPT = LUA_LIBS="-L$(STAGING_DIR)/usr/lib -llua" LUA_CFLAGS="-I$(STAGIN
 EDJE_DEPENDENCIES = host-pkgconfig evas ecore eet lua embryo eina
 EDJE_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,edje))
+$(eval $(call AUTOTARGETS,package/enlightenment,edje))

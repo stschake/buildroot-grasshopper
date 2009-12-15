@@ -12,10 +12,10 @@
 #
 ######################################################################
 
-QT_VERSION:=4.5.2
-QT_SOURCE:=qt-embedded-linux-opensource-src-$(QT_VERSION).tar.bz2
-QT_SITE:=http://get.qtsoftware.com/qt/source
-QT_CAT:=$(BZCAT)
+QT_VERSION:=4.5.3
+QT_SOURCE:=qt-embedded-linux-opensource-src-$(QT_VERSION).tar.gz
+QT_SITE:=http://get.qt.nokia.com/qt/source
+QT_CAT:=$(ZCAT)
 QT_TARGET_DIR:=$(BUILD_DIR)/qt-embedded-linux-opensource-src-$(QT_VERSION)
 
 QT_CONFIGURE:=#empty
@@ -218,6 +218,14 @@ else
 QT_CONFIGURE+= -no-libtiff
 endif
 endif
+
+
+QT_FONTS = $(addprefix $(STAGING_DIR)/usr/lib/fonts/, $(addsuffix *.qpf, \
+	   $(if $(BR2_PACKAGE_QT_FONT_MICRO),micro) \
+	   $(if $(BR2_PACKAGE_QT_FONT_FIXED),fixed) \
+	   $(if $(BR2_PACKAGE_QT_FONT_HELVETICA),helvetica) \
+	   $(if $(BR2_PACKAGE_QT_FONT_JAPANESE),japanese) \
+	   $(if $(BR2_PACKAGE_QT_FONT_UNIFONT),unifont)))
 
 
 ifeq ($(BR2_PACKAGE_QT_QTFREETYPE),y)
@@ -445,7 +453,9 @@ $(STAGING_DIR)/usr/lib/libQtCore.la: $(QT_TARGET_DIR)/.compiled
 
 qt-gui: $(STAGING_DIR)/usr/lib/libQtCore.la
 	mkdir -p $(TARGET_DIR)/usr/lib/fonts
-	cp -dpf $(STAGING_DIR)/usr/lib/fonts/*.qpf $(TARGET_DIR)/usr/lib/fonts
+ifneq ($(QT_FONTS),)
+	cp -dpf $(QT_FONTS) $(TARGET_DIR)/usr/lib/fonts
+endif
 ifneq ($(BR2_PACKAGE_QT_NOFREETYPE),y)
 	cp -dpf $(STAGING_DIR)/usr/lib/fonts/*.ttf $(TARGET_DIR)/usr/lib/fonts
 endif

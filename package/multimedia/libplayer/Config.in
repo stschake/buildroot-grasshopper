@@ -4,3 +4,37 @@ config BR2_PACKAGE_LIBPLAYER
 		libplayer provides a generic A/V API that relies on various multimedia player for Linux systems. It currently supports MPlayer, xine VLC and GStreamer only.
 
 		http://libplayer.geexbox.org/
+
+menuconfig BR2_PACKAGE_LIBPLAYER_FEATURES
+	bool "libplayer features"
+	depends on BR2_PACKAGE_LIBPLAYER
+	help
+		Selects supported features.
+
+if BR2_PACKAGE_LIBPLAYER_FEATURES
+
+	comment "Wrappers"
+
+	config BR2_PACKAGE_LIBPLAYER_WRAPPER_MPLAYER
+	depends on BR2_PACKAGE_MPLAYER
+	bool "MPlayer"
+
+	config BR2_PACKAGE_LIBPLAYER_WRAPPER_GSTREAMER
+	depends on BR2_PACKAGE_GSTREAMER
+	bool "GStreamer"
+
+	config BR2_PACKAGE_LIBPLAYER_WRAPPER_XINE
+	depends on BR2_PACKAGE_XINE
+	bool "Xine"
+
+	config BR2_PACKAGE_LIBPLAYER_WRAPPER_VLC
+	depends on BR2_PACKAGE_VLC
+	bool "VLC"
+
+	comment "Advanced"
+
+	config BR2_PACKAGE_LIBPLAYER_X11
+	depends on BR2_PACKAGE_XSERVER_XORG_SERVER
+	bool "X11 support"
+
+endif

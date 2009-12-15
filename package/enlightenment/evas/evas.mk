@@ -12,4 +12,4 @@ EVAS_CONF_OPT = --enable-fb --disable-xrender-xcb --disable-software-xcb --disab
 EVAS_DEPENDENCIES = host-pkgconfig eina freetype eet
 EVAS_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,evas))
+$(eval $(call AUTOTARGETS,package/enlightenment,evas))

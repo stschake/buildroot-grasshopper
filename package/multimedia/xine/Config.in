@@ -1,0 +1,8 @@
+config BR2_PACKAGE_XINE
+	bool "xine"
+	depends on BR2_PACKAGE_ZLIB
+	help
+		xine is a free (gpl-licensed) high-performance, portable and reusable multimedia playback engine.
+		xine itself is a shared library with an easy to use, yet powerful API which is used by many applications for smooth video playback and video processing purposes.
+
+		http://www.xine-project.org

@@ -12,4 +12,4 @@ EET_CONF_OPT =
 EET_DEPENDENCIES = host-pkgconfig jpeg
 EET_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,eet))
+$(eval $(call AUTOTARGETS,package/enlightenment,eet))

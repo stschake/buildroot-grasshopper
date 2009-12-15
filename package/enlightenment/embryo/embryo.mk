@@ -12,4 +12,4 @@ EMBRYO_CONF_OPT =
 EMBRYO_DEPENDENCIES = host-pkgconfig
 EMBRYO_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,embryo))
+$(eval $(call AUTOTARGETS,package/enlightenment,embryo))

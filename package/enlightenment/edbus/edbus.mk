@@ -12,4 +12,4 @@ EDBUS_CONF_OPT =
 EDBUS_DEPENDENCIES = host-pkgconfig ecore dbus
 EDBUS_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,edbus))
+$(eval $(call AUTOTARGETS,package/enlightenment,edbus))

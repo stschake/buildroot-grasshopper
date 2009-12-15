@@ -1,0 +1,16 @@
+This is a follow-up patch to xine-lib-1.1.16.3-ffmpeg-vc1-extradata.diff by Petri Hintukainen.
+Index: xinelib-1.1.17/src/combined/ffmpeg/ff_video_decoder.c
+===================================================================
+--- a/src/combined/ffmpeg/ff_video_decoder.c	2009-12-12 23:15:20.000000000 +0100
++++ b/src/combined/ffmpeg/ff_video_decoder.c	2009-12-12 23:15:47.000000000 +0100
+@@ -1235,8 +1235,10 @@
+     if (this->decoder_init_mode) {
+       int codec_type = buf->type & 0xFFFF0000;
+ 
++#ifdef AVCODEC_HAS_REORDERED_OPAQUE
+       if (!ff_check_extradata(this, codec_type, buf))
+ 	return;
++#endif /* AVCODEC_HAS_REORDERED_OPAQUE */
+ 
+       /* init ffmpeg decoder */
+       init_video_codec(this, codec_type);

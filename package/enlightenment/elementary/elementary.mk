@@ -12,4 +12,4 @@ ELEMENTARY_CONF_OPT =
 ELEMENTARY_DEPENDENCIES = host-pkgconfig ecore evas edje lua
 ELEMENTARY_LIBTOOL_PATCH = NO
 
-$(eval $(call AUTOTARGETS,package,elementary))
+$(eval $(call AUTOTARGETS,package/enlightenment,elementary))
