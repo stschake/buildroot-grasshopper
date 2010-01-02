@@ -3,8 +3,9 @@
 	New packages: libcdaudio, libdvdnav, libdvdread, hostapd, tcpreplay
 
 	Updated/fixed packages: autoconf, bind, binutils, busybox,
-	directfb, gst-plugins-bad, iw, libfuse, libpcap, lighttpd,
-	mesa, mtd-utils, pcre, qt, sshfs, tremor, usbutils
+	directfb, e2fsprogs, gst-plugins-bad, hal, iw, jpeg, libfuse, libpcap,
+	libungif, lighttpd, mesa, mpg123, mtd-utils, neon, pcre, qt, sshfs,
+	tremor, u-boot, usbutils, xfsprogs
 
 	Issues resolved (http://bugs.uclibc.org):
 
@@ -16,12 +17,16 @@
 	#749: Bump usbutils package to version 0.86
 	#751: Kernel 2.6 snapshot fetch fail
 	#753: Bump lighttpd package to 1.4.25
+	#757: U-Boot: mkimage cannot be installed using external toolchain
 	#761: Add binutils 2.20 to toolchain options
 	#763: [SECURITY] Update pcre to 7.9
 	#765: Add buildroot branding to gcc
 	#767: Bump iw package to 0.9.18
 	#773: [SECURITY] Update bind to 9.5.2-P1
 	#795: Minor edits to fix typos, grammar, spelling, usage in documen...
+	#813: Drop not very useful generic package selection options ...
+	#823: Editor backup files (~) is copied from the target_skeleton
+	#827: Bump mtd-utils package to version 1.2.0
 
 2009.11, Released December 1st, 2009:
 

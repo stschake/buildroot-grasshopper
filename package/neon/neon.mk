@@ -9,7 +9,7 @@ NEON_INSTALL_STAGING:=YES
 NEON_INSTALL_TARGET_OPT:=DESTDIR=$(TARGET_DIR) install
 NEON_CONF_OPT:=--enable-shared --without-gssapi --disable-rpath
 
-NEON_DEPENDENCIES:=host-pkgconfig
+NEON_DEPENDENCIES:=host-pkg-config
 
 ifeq ($(BR2_PACKAGE_NEON_LIBXML2),y)
 NEON_CONF_OPT+=--with-libxml2=yes
@@ -21,6 +21,12 @@ NEON_CONF_OPT+=--with-zlib=$(STAGING_DIR)
 NEON_DEPENDENCIES+=zlib
 else
 NEON_CONF_OPT+=--without-zlib
+endif
+ifeq ($(BR2_PACKAGE_NEON_SSL),y)
+NEON_CONF_OPT+=--with-ssl
+NEON_DEPENDENCIES+=openssl
+else
+NEON_CONF_OPT+=--without-ssl
 endif
 ifeq ($(BR2_PACKAGE_NEON_EXPAT),y)
 NEON_CONF_OPT+=--with-expat=$(STAGING_DIR)/usr/lib/libexpat.la

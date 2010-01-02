@@ -3,7 +3,7 @@
 # mtd provides jffs2 utilities
 #
 #############################################################
-MTD_VERSION:=1.1.0
+MTD_VERSION:=1.2.0
 MTD_SOURCE:=mtd-utils-$(MTD_VERSION).tar.bz2
 MTD_SITE:=ftp://ftp.infradead.org/pub/mtd-utils
 MTD_HOST_DIR:= $(TOOLCHAIN_DIR)/mtd_orig
@@ -34,7 +34,7 @@ $(MTD_HOST_DIR)/.unpacked: $(DL_DIR)/$(MTD_SOURCE)
 	touch $@
 
 
-$(MKFS_JFFS2): $(MTD_HOST_DIR)/.unpacked $(STAMP_DIR)/host_lzo_installed
+$(MKFS_JFFS2): $(MTD_HOST_DIR)/.unpacked
 	CC="$(HOSTCC)" CROSS= LDFLAGS=-L$(HOST_DIR)/usr/lib \
 		$(MAKE) CFLAGS='-I$(HOST_DIR)/usr/include -I./include' \
 		LINUXDIR=$(LINUX_DIR) BUILDDIR=$(MTD_HOST_DIR) \
@@ -46,7 +46,7 @@ $(SUMTOOL): $(MTD_HOST_DIR)/.unpacked
 		LINUXDIR=$(LINUX_DIR) BUILDDIR=$(MTD_HOST_DIR) \
 		-C $(MTD_HOST_DIR) sumtool
 
-mtd-host: $(MKFS_JFFS2) $(SUMTOOL)
+mtd-host: host-lzo $(MKFS_JFFS2) $(SUMTOOL)
 
 mtd-host-source: $(DL_DIR)/$(MTD_SOURCE)
 
