@@ -3,13 +3,11 @@
 # gst-plugins-ugly
 #
 #############################################################
-GST_PLUGINS_UGLY_VERSION = 0.10.10
+GST_PLUGINS_UGLY_VERSION = 0.10.17
 GST_PLUGINS_UGLY_SOURCE = gst-plugins-ugly-$(GST_PLUGINS_UGLY_VERSION).tar.bz2
 GST_PLUGINS_UGLY_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-ugly
-GST_PLUGINS_UGLY_LIBTOOL_PATCH = NO
 
 GST_PLUGINS_UGLY_CONF_OPT = \
-		$(DISABLE_NLS) \
 		--disable-examples
 
 GST_PLUGINS_UGLY_DEPENDENCIES = gstreamer gst-plugins-base
@@ -62,18 +60,18 @@ else
 GST_PLUGINS_UGLY_CONF_OPT += --disable-synaesthesia
 endif
 
-ifeq ($(BR2_PACKAGE_GST_PLUGINS_UGLY_PLUGIN_ID3TAG),y)
-GST_PLUGINS_UGLY_CONF_OPT += --enable-id3tag
-GST_PLUGINS_UGLY_DEPENDENCIES += libid3tag
-else
-GST_PLUGINS_UGLY_CONF_OPT += --disable-id3tag
-endif
-
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_UGLY_PLUGIN_MAD),y)
 GST_PLUGINS_UGLY_CONF_OPT += --enable-mad
-GST_PLUGINS_UGLY_DEPENDENCIES += libmad
+GST_PLUGINS_UGLY_DEPENDENCIES += libid3tag libmad
 else
 GST_PLUGINS_UGLY_CONF_OPT += --disable-mad
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_UGLY_PLUGIN_MPEG2DEC),y)
+GST_PLUGINS_UGLY_CONF_OPT += --enable-mpeg2dec
+GST_PLUGINS_UGLY_DEPENDENCIES += libmpeg2
+else
+GST_PLUGINS_UGLY_CONF_OPT += --disable-mpeg2dec
 endif
 
 $(eval $(call AUTOTARGETS,package/multimedia,gst-plugins-ugly))

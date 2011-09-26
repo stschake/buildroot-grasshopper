@@ -4,126 +4,74 @@ comment "GCC Options"
 
 choice
 	prompt "GCC compiler Version"
-	default BR2_GCC_VERSION_4_3_4 if !BR2_avr32
-	default BR2_GCC_VERSION_4_2_3 if BR2_avr32
+	default BR2_GCC_VERSION_4_3_X if !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
+	default BR2_GCC_VERSION_4_4_X if BR2_sparc_sparchfleon || BR2_sparc_sparchfleonv8 || BR2_sparc_sparcsfleon || BR2_sparc_sparcsfleonv8
+	default BR2_GCC_VERSION_4_2_2_AVR32_2_1_5 if BR2_avr32
 	help
 	  Select the version of gcc you wish to use.
-
-	config BR2_GCC_VERSION_4_1_2
-		depends on !BR2_nios2 && !BR2_avr32
-		depends on BR2_DEPRECATED
-		bool "gcc 4.1.2"
-
-	config BR2_GCC_VERSION_4_2_1
-		depends on !BR2_nios2 && !BR2_avr32
-		depends on BR2_DEPRECATED
-		bool "gcc 4.2.1"
-
-	config BR2_GCC_VERSION_4_2_2
-		depends on !BR2_avr32
-		depends on BR2_DEPRECATED
-		bool "gcc 4.2.2"
 
 	config BR2_GCC_VERSION_4_2_2_AVR32_2_1_5
 	       depends on BR2_avr32
 	       bool "gcc 4.2.2-avr32-2.1.5"
 
-	config BR2_GCC_VERSION_4_2_3
-		depends on !BR2_nios2 && !BR2_avr32
-		depends on BR2_DEPRECATED
-		bool "gcc 4.2.3"
-
 	config BR2_GCC_VERSION_4_2_4
-		depends on !BR2_avr32 && !BR2_nios2
-		depends on BR2_RECENT || BR2_DEPRECATED
+		depends on !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
 		bool "gcc 4.2.4"
 
-	config BR2_GCC_VERSION_4_3_2
-		depends on !BR2_avr32 && !BR2_nios2
-		depends on BR2_DEPRECATED
-		bool "gcc 4.3.2"
-
-	config BR2_GCC_VERSION_4_3_3
-		depends on !BR2_avr32 && !BR2_nios2
-		depends on BR2_RECENT || BR2_DEPRECATED
-		bool "gcc 4.3.3"
-
-	config BR2_GCC_VERSION_4_3_4
-		depends on !BR2_avr32 && !BR2_nios2
-		bool "gcc 4.3.4"
+	config BR2_GCC_VERSION_4_3_X
+		depends on !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
+		bool "gcc 4.3.x"
 
 	config BR2_GCC_VERSION_4_4_X
-		depends on !BR2_avr32 && !BR2_nios2
+		depends on !BR2_avr32
 		bool "gcc 4.4.x"
 
+	config BR2_GCC_VERSION_4_5_X
+		depends on !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
+		bool "gcc 4.5.x"
+
+	config BR2_GCC_VERSION_4_6_X
+		depends on !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
+		bool "gcc 4.6.x"
+
 	config BR2_GCC_VERSION_SNAP
-		depends on !BR2_avr32 && !BR2_nios2
+		depends on !BR2_avr32 && !BR2_sparc_sparchfleon && !BR2_sparc_sparchfleonv8 && !BR2_sparc_sparcsfleon && !BR2_sparc_sparcsfleonv8
 		bool "gcc snapshot"
 endchoice
 
-config BR2_GCC_SUPPORTS_SYSROOT
-	bool
-	default y if !BR2_GCC_VERSION_4_1_2
-
 config BR2_GCC_SUPPORTS_FINEGRAINEDMTUNE
 	bool
-	default y if !BR2_GCC_VERSION_4_1_2 && !BR2_GCC_VERSION_4_2_1 && !BR2_GCC_VERSION_4_2_2 && !BR2_GCC_VERSION_4_2_3 && !BR2_GCC_VERSION_4_2_4 && !BR2_GCC_VERSION_4_2_2_AVR32_2_1_5
+	default y if !BR2_GCC_VERSION_4_2_4 && !BR2_GCC_VERSION_4_2_2_AVR32_2_1_5
 
 config BR2_GCC_SNAP_DATE
 	string "GCC snapshot date"
-	default "20070921"
+	default "4.7-20110430"
 	depends on BR2_GCC_VERSION_SNAP
 	help
-	  Enter snapshot date to use for gcc.  Format is:
-	  YYYYMMDD
+	  Enter snapshot date to use for gcc.
+	  Format is: A.B-YYYYMMDD
+
+	  A is GCC major version, for example 4.
+	  B is GCC minor version, for example 7.
+	  YYYYMMDD is snapshot date, for example 20110430.
+
+	  This way we'd get version 4.7-20110430
 
 config BR2_GCC_VERSION
 	string
-	default "4.1.2"     if BR2_GCC_VERSION_4_1_2
-	default "4.2.1"     if BR2_GCC_VERSION_4_2_1
-	default "4.2.2"     if BR2_GCC_VERSION_4_2_2
 	default "4.2.2-avr32-2.1.5" if BR2_GCC_VERSION_4_2_2_AVR32_2_1_5
-	default "4.2.3"     if BR2_GCC_VERSION_4_2_3
 	default "4.2.4"     if BR2_GCC_VERSION_4_2_4
-	default "4.3.2"     if BR2_GCC_VERSION_4_3_2
-	default "4.3.3"     if BR2_GCC_VERSION_4_3_3
-	default "4.3.4"     if BR2_GCC_VERSION_4_3_4
-	default "4.4.2"     if BR2_GCC_VERSION_4_4_X
+	default "4.3.6"     if BR2_GCC_VERSION_4_3_X
+	default "4.4.6"     if BR2_GCC_VERSION_4_4_X
+	default "4.5.3"     if BR2_GCC_VERSION_4_5_X
+	default "4.6.1"     if BR2_GCC_VERSION_4_6_X
 	default $BR2_GCC_SNAP_DATE if BR2_GCC_VERSION_SNAP
-
-config BR2_TOOLCHAIN_SYSROOT
-	bool "Enable toolchain with --sysroot support"
-	depends on BR2_GCC_SUPPORTS_SYSROOT
-	default y
-	help
-	  Enables --sysroot=dir for binutils and gcc.
-	  Use dir as the logical root directory for headers and libraries.
-	  For example, if the compiler would normally search for headers in
-	  /usr/include and libraries in /usr/lib, it will instead search
-	  dir/usr/include and dir/usr/lib.
-
-	  This does not work with gcc < 4.2.0 (4.1.2 gets
-	  ORIGINAL_AS_FOR_TARGET wrong)
-
-config BR2_GCC_USE_SJLJ_EXCEPTIONS
-	bool "Enable setjmp/longjmp exceptions?"
-	help
-	  For some platforms, proper stack unwinding works perfectly,
-	  while other platforms must use setjmp/longjmp exceptions for
-	  proper stack unwinding during exception handling.  Most people
-	  can leave this set to n.
 
 config BR2_EXTRA_GCC_CONFIG_OPTIONS
 	string "Additional gcc options"
 	default ""
 	help
 	  Any additional gcc configure options you may want to include....
-
-config BR2_GCC_CROSS_FORTRAN
-	bool "Fortran cross-compiler support"
-	depends on !BR2_avr32
-	help
-	  Build a Fortran cross-compiler
 
 config BR2_GCC_CROSS_JAVA
        bool
@@ -133,6 +81,7 @@ config BR2_INSTALL_LIBGCJ
 	depends on !BR2_avr32 && BR2_INSTALL_LIBSTDCPP
 	select BR2_GCC_CROSS_JAVA
 	select BR2_LARGEFILE
+	depends on BROKEN
 	help
 	  Build/install java compiler and libgcj?
 
@@ -153,15 +102,22 @@ config BR2_INSTALL_FORTRAN
 
 config BR2_GCC_SHARED_LIBGCC
 	bool "Build/install a shared libgcc?"
+	depends on !BR2_PREFER_STATIC_LIB
 	default y
-	depends on !BR2_sparc && !BR2_sparc64
+	depends on !BR2_sparc
 	help
 	  Build/install a shared libgcc library
 
 config BR2_GCC_ENABLE_TLS
 	bool "Enable compiler tls support"
 	default y
-	depends on !BR2_GCC_VERSION_4_4_X
+	depends on BR2_PTHREADS_NATIVE
 	help
 	  Enable the compiler to generate code for accessing
 	  thread local storage variables
+
+config BR2_GCC_ENABLE_OPENMP
+	bool "Enable compiler OpenMP support"
+	depends on !BR2_PTHREADS_NONE && !BR2_avr32
+	help
+	  Enable OpenMP support for the compiler

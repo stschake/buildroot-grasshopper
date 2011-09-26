@@ -3,20 +3,19 @@
 # samba
 #
 #############################################################
-SAMBA_VERSION:=3.3.8
-SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
-SAMBA_SITE:=http://samba.org/samba/ftp/stable/
+SAMBA_VERSION = 3.5.11
+SAMBA_SOURCE = samba-$(SAMBA_VERSION).tar.gz
+SAMBA_SITE = http://ftp.samba.org/pub/samba/stable/
 
-SAMBA_SUBDIR = source
+SAMBA_SUBDIR = source3
 SAMBA_AUTORECONF = NO
-SAMBA_LIBTOOL_PATCH = NO
 
 SAMBA_INSTALL_STAGING = YES
 SAMBA_INSTALL_TARGET = YES
 
 
 SAMBA_DEPENDENCIES = \
-	libiconv \
+	$(if $(BR2_ENABLE_LOCALE),,libiconv) \
 	$(if $(BR2_PACKAGE_SAMBA_RPCCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_SMBCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_AVAHI),avahi) \
@@ -46,8 +45,6 @@ SAMBA_CONF_OPT = \
 	--with-privatedir=/etc/samba \
 	\
 	--disable-cups \
-	--disable-static \
-	--enable-shared \
 	--enable-shared-libs \
 	--disable-pie \
 	--disable-relro \
@@ -85,9 +82,6 @@ SAMBA_UNINSTALL_TARGET_OPT = \
 	$(if $(BR2_PACKAGE_SAMBA_SWAT),uninstallswat)
 
 
-$(eval $(call AUTOTARGETS,package,samba))
-
-
 # binaries to keep
 SAMBA_BINTARGETS_y = \
 	usr/sbin/smbd \
@@ -116,6 +110,7 @@ SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBCACLS) += usr/bin/smbcacls
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBCLIENT) += usr/bin/smbclient
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBCONTROL) += usr/bin/smbcontrol
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBCQUOTAS) += usr/bin/smbcquotas
+SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBD) += usr/sbin/smbd
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBGET) += usr/bin/smbget
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBLDBTOOLS) += usr/bin/ldbadd
 SAMBA_BINTARGETS_$(BR2_PACKAGE_SAMBA_SMBLDBTOOLS) += usr/bin/ldbdel
@@ -155,14 +150,30 @@ SAMBA_TXTTARGETS_ = \
 SAMBA_TXTTARGETS_$(BR2_PACKAGE_SAMBA_FINDSMB) += usr/bin/findsmb
 SAMBA_TXTTARGETS_$(BR2_PACKAGE_SAMBA_SMBTAR) += usr/bin/smbtar
 
-
-$(SAMBA_HOOK_POST_INSTALL):
-	$(call MESSAGE,"Post installing")
-	# remove unneeded
+define SAMBA_REMOVE_UNNEEDED_BINARIES
 	rm -f $(addprefix $(TARGET_DIR)/, $(SAMBA_BINTARGETS_))
 	rm -f $(addprefix $(TARGET_DIR)/, $(SAMBA_TXTTARGETS_))
-	# strip binaries
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(addprefix $(TARGET_DIR)/, $(SAMBA_BINTARGETS_y))
+endef
+
+SAMBA_POST_INSTALL_TARGET_HOOKS += SAMBA_REMOVE_UNNEEDED_BINARIES
+
+define SAMBA_REMOVE_SWAT_DOCUMENTATION
+	# Remove the documentation
+	rm -rf $(TARGET_DIR)/usr/swat/help/manpages
+	rm -rf $(TARGET_DIR)/usr/swat/help/Samba3*
+	rm -rf $(TARGET_DIR)/usr/swat/using_samba/
+	# Removing the welcome.html file will make swat default to
+	# welcome-no-samba-doc.html
+	rm -rf $(TARGET_DIR)/usr/swat/help/welcome.html
+endef
+
+ifeq ($(BR2_PACKAGE_SAMBA_SWAT),y)
+ifneq ($(BR2_HAVE_DOCUMENTATION),y)
+SAMBA_POST_INSTALL_TARGET_HOOKS += SAMBA_REMOVE_SWAT_DOCUMENTATION
+endif
+endif
+
+define SAMBA_INSTALL_INITSCRIPTS_CONFIG
 	# install start/stop script
 	@if [ ! -f $(TARGET_DIR)/etc/init.d/S91smb ]; then \
 		$(INSTALL) -m 0755 -D package/samba/S91smb $(TARGET_DIR)/etc/init.d/S91smb; \
@@ -171,5 +182,8 @@ $(SAMBA_HOOK_POST_INSTALL):
 	@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
 		$(INSTALL) -m 0755 -D package/samba/simple.conf $(TARGET_DIR)/etc/samba/smb.conf; \
 	fi
-	$(Q)touch $@
+endef
 
+SAMBA_POST_INSTALL_TARGET_HOOKS += SAMBA_INSTALL_INITSCRIPTS_CONFIG
+
+$(eval $(call AUTOTARGETS,package,samba))

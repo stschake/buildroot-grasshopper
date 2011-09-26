@@ -3,20 +3,17 @@
 # gst-plugins-good
 #
 #############################################################
-GST_PLUGINS_GOOD_VERSION = 0.10.16
+GST_PLUGINS_GOOD_VERSION = 0.10.28
 GST_PLUGINS_GOOD_SOURCE = gst-plugins-good-$(GST_PLUGINS_GOOD_VERSION).tar.bz2
 GST_PLUGINS_GOOD_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-good
-GST_PLUGINS_GOOD_LIBTOOL_PATCH = NO
 
 GST_PLUGINS_GOOD_CONF_OPT = \
-		$(DISABLE_NLS) \
 		--disable-debug \
 		--disable-examples \
 		--disable-directsound \
 		--disable-sunaudio \
 		--disable-osx_audio \
 		--disable-osx_video \
-		--disable-gst_v4l2 \
 		--disable-x \
 		--disable-xshm \
 		--disable-xvideo \
@@ -147,6 +144,12 @@ else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-icydemux
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_IMAGEFREEZE),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-imagefreeze
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-imagefreeze
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_INTERLEAVE),y)
 GST_PLUGINS_GOOD_CONF_OPT += --enable-interleave
 else
@@ -237,6 +240,12 @@ else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-rtsp
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_SHAPEWIPE),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-shapewipe
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-shapewipe
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_SMPTE),y)
 GST_PLUGINS_GOOD_CONF_OPT += --enable-smpte
 else
@@ -291,11 +300,24 @@ else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-y4m
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_V4L2),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-gst_v4l2
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-gst_v4l2
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_ANNODEX),y)
 GST_PLUGINS_GOOD_CONF_OPT += --enable-annodex
 GST_PLUGINS_GOOD_DEPENDENCIES += libxml2
 else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-annodex
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_CAIRO),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-cairo
+GST_PLUGINS_GOOD_DEPENDENCIES += cairo
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-cairo
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_FLAC),y)
@@ -311,11 +333,24 @@ else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-oss
 endif
 
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_OSS4),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-oss4
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-oss4
+endif
+
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_SOUPHTTPSRC),y)
 GST_PLUGINS_GOOD_CONF_OPT += --enable-soup
 GST_PLUGINS_GOOD_DEPENDENCIES += libsoup
 else
 GST_PLUGINS_GOOD_CONF_OPT += --disable-soup
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_GOOD_PLUGIN_SPEEX),y)
+GST_PLUGINS_GOOD_CONF_OPT += --enable-speex
+GST_PLUGINS_GOOD_DEPENDENCIES += speex
+else
+GST_PLUGINS_GOOD_CONF_OPT += --disable-speex
 endif
 
 $(eval $(call AUTOTARGETS,package/multimedia,gst-plugins-good))

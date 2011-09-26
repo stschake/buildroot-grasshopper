@@ -10,22 +10,30 @@ choice
 
 config BR2_TOOLCHAIN_BUILDROOT
 	bool "Buildroot toolchain"
+	select BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS
 
 config BR2_TOOLCHAIN_EXTERNAL
-	bool "External binary toolchain"
+	bool "External toolchain"
+	help
+	  Select if you want to use an existing cross-compiling
+	  toolchain. Buildroot can either download automatically a
+	  toolchain, or use an already installed toolchain.
+
+config BR2_TOOLCHAIN_CTNG
+	bool "Crosstool-NG toolchain"
+	select BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS
+	help
+	  Say 'y' if you want to generate the toolchain with crosstool-NG
+	  ( http://ymorin.is-a-geek.org/projects/crosstool )
+
+	  This is considered experimental, and you can expect some breakage.
 
 endchoice
 
-source "toolchain/Config.in.1"
-source "toolchain/external-toolchain/Config.in"
-
-# we want gdb config in the middle of both source and external
-# toolchains, but mconf won't let us source the same file twice,
-# so put it here instead
-source "toolchain/gdb/Config.in"
-comment "Common Toolchain Options"
-
-source "toolchain/Config.in.2"
-source "toolchain/external-toolchain/Config.in.2"
+source "toolchain/toolchain-buildroot/Config.in"
+source "toolchain/toolchain-external/Config.in"
+source "toolchain/toolchain-crosstool-ng/Config.in"
+source "toolchain/toolchain-common.in"
+source "toolchain/toolchain-buildroot/Config.in.2"
 
 endmenu

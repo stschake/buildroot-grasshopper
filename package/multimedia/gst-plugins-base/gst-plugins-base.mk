@@ -3,20 +3,19 @@
 # gst-plugins-base
 #
 #############################################################
-GST_PLUGINS_BASE_VERSION = 0.10.25
+GST_PLUGINS_BASE_VERSION = 0.10.32
 GST_PLUGINS_BASE_SOURCE = gst-plugins-base-$(GST_PLUGINS_BASE_VERSION).tar.bz2
 GST_PLUGINS_BASE_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-base
 GST_PLUGINS_BASE_INSTALL_STAGING = YES
-GST_PLUGINS_BASE_LIBTOOL_PATCH = NO
 
 # freetype is only used by examples, but if it is not found
 # and the host has a freetype-config script, then the host
 # include dirs are added to the search path causing trouble
-GST_PLUGINS_BASE_CONF_ENV = FT2_CONFIG=/bin/false
+GST_PLUGINS_BASE_CONF_ENV =
+		FT2_CONFIG=/bin/false \
+		ac_cv_header_stdint_t="stdint.h"
 
 GST_PLUGINS_BASE_CONF_OPT = \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
 		--disable-examples \
 		--disable-x \
 		--disable-xvideo \
@@ -25,7 +24,14 @@ GST_PLUGINS_BASE_CONF_OPT = \
 		--disable-vorbistest \
 		--disable-freetypetest
 
-GST_PLUGINS_BASE_DEPENDENCIES = gstreamer liboil
+GST_PLUGINS_BASE_DEPENDENCIES = gstreamer
+
+# alsa support needs pcm+mixer support, but configure fails to check for it
+ifeq ($(BR2_PACKAGE_ALSA_LIB)$(BR2_PACKAGE_ALSA_LIB_MIXER)$(BR2_PACKAGE_ALSA_LIB_PCM),yyy)
+GST_PLUGINS_BASE_DEPENDENCIES += alsa-lib
+else
+GST_PLUGINS_BASE_CONF_OPT += --disable-alsa
+endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_ADDER),y)
 GST_PLUGINS_BASE_CONF_OPT += --enable-adder
@@ -61,6 +67,12 @@ ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_AUDIOTESTSRC),y)
 GST_PLUGINS_BASE_CONF_OPT += --enable-audiotestsrc
 else
 GST_PLUGINS_BASE_CONF_OPT += --disable-audiotestsrc
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_ENCODING),y)
+GST_PLUGINS_BASE_CONF_OPT += --enable-encoding
+else
+GST_PLUGINS_BASE_CONF_OPT += --disable-encoding
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_FFMPEGCOLORSPACE),y)
@@ -142,6 +154,13 @@ GST_PLUGINS_BASE_CONF_OPT += --enable-theora
 GST_PLUGINS_BASE_DEPENDENCIES += libtheora
 else
 GST_PLUGINS_BASE_CONF_OPT += --disable-theora
+endif
+
+ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_TREMOR),y)
+GST_PLUGINS_BASE_CONF_OPT += --enable-ivorbis
+GST_PLUGINS_BASE_DEPENDENCIES += tremor
+else
+GST_PLUGINS_BASE_CONF_OPT += --disable-ivorbis
 endif
 
 ifeq ($(BR2_PACKAGE_GST_PLUGINS_BASE_PLUGIN_VORBIS),y)

@@ -4,8 +4,7 @@
 #
 #############################################################
 
-KISMET_VERSION = 2009-06-R1
-KISMET_SOURCE = kismet-$(KISMET_VERSION).tar.gz
+KISMET_VERSION = 2011-03-R2
 KISMET_SITE = http://www.kismetwireless.net/code
 KISMET_DEPENDENCIES = libpcap ncurses
 
@@ -30,19 +29,38 @@ ifeq ($(BR2_PACKAGE_KISMET_DRONE),y)
 	KISMET_TARGET_CONFIGS += kismet_drone.conf
 endif
 
-$(eval $(call AUTOTARGETS,package,kismet))
-
-$(KISMET_TARGET_INSTALL_TARGET):
-	$(call MESSAGE,"Installing")
+ifdef KISMET_TARGET_BINARIES
+define KISMET_INSTALL_TARGET_BINARIES
 	$(INSTALL) -m 755 $(addprefix $(KISMET_DIR)/, $(KISMET_TARGET_BINARIES)) $(TARGET_DIR)/usr/bin
-	$(INSTALL) -m 644 $(addprefix $(KISMET_DIR)/conf/, $(KISMET_TARGET_CONFIGS)) $(TARGET_DIR)/etc
-ifeq ($(BR2_ENABLE_DEBUG),)
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(addprefix $(TARGET_DIR)/usr/bin/, $(KISMET_TARGET_BINARIES))
+endef
 endif
-	touch $@
 
-$(KISMET_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
+ifdef KISMET_TARGET_CONFIGS
+define KISMET_INSTALL_TARGET_CONFIGS
+	$(INSTALL) -m 644 $(addprefix $(KISMET_DIR)/conf/, $(KISMET_TARGET_CONFIGS)) $(TARGET_DIR)/etc
+endef
+endif
+
+define KISMET_INSTALL_TARGET_CMDS
+	$(KISMET_INSTALL_TARGET_BINARIES)
+	$(KISMET_INSTALL_TARGET_CONFIGS)
+endef
+
+ifdef KISMET_TARGET_BINARIES
+define KISMET_UNINSTALL_TARGET_BINARIES
 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/, $(KISMET_TARGET_BINARIES))
+endef
+endif
+
+ifdef KISMET_TARGET_CONFIGS
+define KISMET_UNINSTALL_TARGET_CONFIGS
 	rm -f $(addprefix $(TARGET_DIR)/etc/, $(KISMET_TARGET_CONFIGS))
-	rm -f $(KISMET_TARGET_INSTALL_TARGET) $(KISMET_HOOK_POST_INSTALL)
+endef
+endif
+
+define KISMET_UNINSTALL_TARGET_CMDS
+	$(KISMET_UNINSTALL_TARGET_BINARIES)
+	$(KISMET_UNINSTALL_TARGET_CONFIGS)
+endef
+
+$(eval $(call AUTOTARGETS,package,kismet))

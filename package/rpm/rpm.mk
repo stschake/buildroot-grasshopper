@@ -3,26 +3,30 @@
 # rpm
 #
 #############################################################
-RPM_VERSION = 5.1.6
-RPM_SITE = http://rpm5.org/files/rpm/rpm-5.1/
-RPM_AUTORECONF = YES
-RPM_LIBTOOL_PATCH = NO
+RPM_VERSION = 5.2.0
+RPM_SITE = http://rpm5.org/files/rpm/rpm-5.2/
+RPM_AUTORECONF = NO
 
-RPM_DEPENDENCIES = zlib bzip2 beecrypt neon popt
+RPM_DEPENDENCIES = zlib beecrypt neon popt
 
-RPM_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/beecrypt -I$(STAGING_DIR)/usr/include/neon" \
-		ac_cv_va_copy=yes
-# the above doesn't work with shared config.cache
-RPM_USE_CONFIG_CACHE = NO
+RPM_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/beecrypt -I$(STAGING_DIR)/usr/include/neon -DHAVE_MUTEX_THREAD_ONLY" \
+		ac_cv_va_copy=yes 
 
 RPM_CONF_OPT = --disable-build-versionscript --disable-rpath \
 	--without-selinux \
 	--without-python --without-perl \
 	--with-zlib=$(STAGING_DIR) \
 	--with-libbeecrypt=$(STAGING_DIR) \
-	--with-popt=$(STAGING_DIR) \
-	--with-mutex=UNIX/fcntl \
-	--with-bzip2
+	--with-popt=$(STAGING_DIR) 
+
+ifeq ($(BR2_PACKAGE_RPM_XZ_PAYLOADS),y)
+RPM_CONF_OPT+=--with-xz
+endif
+
+ifeq ($(BR2_PACKAGE_RPM_BZIP2_PAYLOADS),y)
+RPM_CONF_OPT+=--with-bzip2
+RPM_DEPENDENCIES+=bzip2
+endif
 
 RPM_MAKE = $(MAKE1)
 

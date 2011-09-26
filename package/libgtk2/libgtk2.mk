@@ -3,12 +3,12 @@
 # libgtk2.0
 #
 #############################################################
-LIBGTK2_VERSION_MAJOR:=2.12
-LIBGTK2_VERSION_MINOR:=12
+LIBGTK2_VERSION_MAJOR:=2.24
+LIBGTK2_VERSION_MINOR:=4
 LIBGTK2_VERSION = $(LIBGTK2_VERSION_MAJOR).$(LIBGTK2_VERSION_MINOR)
 
 LIBGTK2_SOURCE = gtk+-$(LIBGTK2_VERSION).tar.bz2
-LIBGTK2_SITE = ftp://ftp.gtk.org/pub/gtk/$(LIBGTK2_VERSION_MAJOR)
+LIBGTK2_SITE = http://ftp.gnome.org/pub/gnome/sources/gtk+/$(LIBGTK2_VERSION_MAJOR)
 LIBGTK2_AUTORECONF = NO
 LIBGTK2_INSTALL_STAGING = YES
 LIBGTK2_INSTALL_TARGET = YES
@@ -66,13 +66,11 @@ LIBGTK2_CONF_ENV = ac_cv_func_posix_getpwuid_r=yes glib_cv_stack_grows=no \
 		ac_cv_prog_F77=no \
 		ac_cv_path_CUPS_CONFIG=no
 
-LIBGTK2_CONF_OPT = --enable-shared \
-		--enable-static \
-		--disable-glibtest \
+LIBGTK2_CONF_OPT = --disable-glibtest \
 		--enable-explicit-deps=no \
 		--disable-debug
 
-LIBGTK2_DEPENDENCIES = host-pkg-config host-libgtk2 libglib2 cairo pango atk
+LIBGTK2_DEPENDENCIES = host-pkg-config host-libgtk2 libglib2 cairo pango atk gdk-pixbuf
 
 ifeq ($(BR2_PACKAGE_DIRECTFB),y)
 	LIBGTK2_CONF_OPT += --with-gdktarget=directfb
@@ -88,11 +86,6 @@ ifeq ($(BR2_PACKAGE_XORG7),y)
 	LIBGTK2_DEPENDENCIES += xlib_libXcomposite xserver_xorg-server
 else
 	LIBGTK2_CONF_OPT += --without-x
-endif
-
-# Buildroot does not support JPEG2000 library
-ifeq ($(LIBGTK2_VERSION_MAJOR),2.15)
-LIBGTK2_CONF_OPT += --without-libjasper
 endif
 
 ifeq ($(BR2_PACKAGE_LIBPNG),y)
@@ -119,21 +112,45 @@ else
 LIBGTK2_CONF_OPT += --disable-cups
 endif
 
-HOST_LIBGTK2_DEPENDENCIES = host-cairo host-libglib2 host-pango host-atk
+ifeq ($(BR2_PACKAGE_LIBGTK2_DEMO),)
+define LIBGTK2_POST_INSTALL_TWEAKS
+	rm -rf $(TARGET_DIR)/usr/share/gtk-2.0/demo $(TARGET_DIR)/usr/bin/gtk-demo
+endef
+
+LIBGTK2_POST_INSTALL_TARGET_HOOKS += LIBGTK2_POST_INSTALL_TWEAKS
+endif
+
+# We do not build a full version of libgtk2 for the host, because that
+# requires compiling Cairo, Pango, ATK and X.org for the
+# host. Therefore, we patch it to remove dependencies, and we hack the
+# build to only build gdk-pixbuf-from-source and
+# gtk-update-icon-cache, which are the host tools needed to build Gtk
+# for the target.
+
+HOST_LIBGTK2_DEPENDENCIES = host-libglib2 host-libpng host-gdk-pixbuf
+HOST_LIBGTK2_AUTORECONF = YES
 HOST_LIBGTK2_CONF_OPT = \
 		--disable-static \
 		--disable-glibtest \
 		--without-libtiff \
 		--without-libjpeg \
-		--with-x \
-		--with-gdktarget=x11 \
+		--with-gdktarget=none \
 		--disable-cups \
 		--disable-debug
 
+define HOST_LIBGTK2_PATCH_REDUCE_DEPENDENCIES_HOOK
+ support/scripts/apply-patches.sh $(@D) $($(PKG)_DIR_PREFIX)/$(RAWNAME) host-*.patch
+endef
+
+HOST_LIBGTK2_POST_PATCH_HOOKS += HOST_LIBGTK2_PATCH_REDUCE_DEPENDENCIES_HOOK
+
+define HOST_LIBGTK2_BUILD_CMDS
+ $(HOST_MAKE_ENV) make -C $(@D)/gtk gtk-update-icon-cache
+endef
+
+define HOST_LIBGTK2_INSTALL_CMDS
+ cp $(@D)/gtk/gtk-update-icon-cache $(HOST_DIR)/usr/bin
+endef
+
 $(eval $(call AUTOTARGETS,package,libgtk2))
 $(eval $(call AUTOTARGETS,package,libgtk2,host))
-
-$(LIBGTK2_HOOK_POST_INSTALL):
-	$(INSTALL) -m 755 package/libgtk2/S26libgtk2 $(TARGET_DIR)/etc/init.d/
-	rm -rf $(TARGET_DIR)/usr/share/gtk-2.0/demo $(TARGET_DIR)/usr/bin/gtk-demo
-	touch $@

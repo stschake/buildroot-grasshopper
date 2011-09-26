@@ -1,6 +1,6 @@
 config BR2_PACKAGE_SAMBA
 	bool "samba"
-	select BR2_PACKAGE_LIBICONV
+	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE
 	help
 	  Provides print services to all manner of SMB/CIFS clients,
 	  including the numerous versions of Microsoft Windows
@@ -122,6 +122,13 @@ config BR2_PACKAGE_SAMBA_SMBCQUOTAS
 	help
 	  Set or get QUOTAs of NTFS 5 shares
 
+config BR2_PACKAGE_SAMBA_SMBD
+	bool "smbd"
+	default y
+	depends on BR2_PACKAGE_SAMBA
+	help
+	  The server daemon that provides filesharing and printing services
+
 config BR2_PACKAGE_SAMBA_SMBGET
 	bool "smbget"
 	default y
@@ -241,12 +248,13 @@ config BR2_PACKAGE_SAMBA_AVAHI
 	bool "support avahi"
 	default y
 	depends on BR2_PACKAGE_SAMBA
-	depends on BR2_PACKAGE_AVAHI
+	depends on BR2_PACKAGE_AVAHI_DAEMON
+	depends on BR2_PACKAGE_DBUS
 	help
 	  Include support for avahi
 
-comment "support avahi - disabled (requires avahi)"
-	depends on !BR2_PACKAGE_AVAHI
+comment "support avahi - disabled (requires avahi-daemon/dbus)"
+	depends on !BR2_PACKAGE_AVAHI_DAEMON || !BR2_PACKAGE_DBUS
 
 config BR2_PACKAGE_SAMBA_GAMIN
 	bool "support gamin"

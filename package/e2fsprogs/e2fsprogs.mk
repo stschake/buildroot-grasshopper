@@ -3,36 +3,34 @@
 # e2fsprogs
 #
 #############################################################
-E2FSPROGS_VERSION:=1.41.9
-E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
-E2FSPROGS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
 
-E2FSPROGS_AUTORECONF = NO
-E2FSPROGS_LIBTOOL_PATCH = NO
-
-E2FSPROGS_INSTALL_STAGING = YES
-E2FSPROGS_INSTALL_TARGET = YES
+E2FSPROGS_VERSION = 1.41.14
+E2FSPROGS_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
 
 E2FSPROGS_CONF_OPT = \
 	--disable-tls \
 	--enable-elf-shlibs \
-	--disable-debugfs \
-	--disable-imager \
-	--disable-resizer \
+	$(if $(BR2_PACKAGE_E2FSPROGS_DEBUGFS),,--disable-debugfs) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_E2IMAGE),,--disable-imager) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_RESIZE2FS),,--disable-resizer) \
+	--disable-uuidd \
+	--disable-blkid \
+	--disable-libuuid \
 	--enable-fsck \
 	--disable-e2initrd-helper \
-	--disable-testio-debug \
-	$(DISABLE_NLS) \
-	$(DISABLE_LARGEFILE)
+	--disable-testio-debug
+
+E2FSPROGS_DEPENDENCIES = host-pkg-config util-linux
 
 E2FSPROGS_MAKE_OPT = \
 	LDCONFIG=true
 
-$(eval $(call AUTOTARGETS,package,e2fsprogs))
+define HOST_E2FSPROGS_INSTALL_CMDS
+ $(HOST_MAKE_ENV) $(MAKE) -C $(@D) install install-libs
+endef
 
 # binaries to keep or remove
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_BADBLOCKS) += usr/sbin/badblocks
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_BLKID) += usr/sbin/blkid
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_CHATTR) += usr/bin/chattr
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_DUMPE2FS) += usr/sbin/dumpe2fs
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_E2FREEFRAG) += usr/sbin/e2freefrag
@@ -45,16 +43,7 @@ E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_LOGSAVE) += usr/sbin/logsave
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_LSATTR) += usr/bin/lsattr
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_MKE2FS) += usr/sbin/mke2fs
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_MKLOSTFOUND) += usr/sbin/mklost+found
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UUIDD) += usr/sbin/uuidd
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UUIDGEN) += usr/bin/uuidgen
-
-# libraries to keep or remove
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_LIBUUID) += usr/lib/libuuid.so*
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_LIBBLKID) += usr/lib/libblkid.so*
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UTILS) += usr/lib/libcom_err.so*
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UTILS) += usr/lib/libe2p.so*
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UTILS) += usr/lib/libext2fs.so*
-E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_UTILS) += usr/lib/libss.so*
 
 # files to remove
 E2FSPROGS_TXTTARGETS_ = \
@@ -65,34 +54,50 @@ E2FSPROGS_TXTTARGETS_ = \
 	usr/sbin/findfs \
 	usr/sbin/tune2fs
 
-$(E2FSPROGS_HOOK_POST_INSTALL):
-	$(call MESSAGE,"Post installing")
-	# strip binaries
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(addprefix $(TARGET_DIR)/, $(E2FSPROGS_BINTARGETS_y))
-	# remove unneeded
+define E2FSPROGS_TARGET_REMOVE_UNNEEDED
 	rm -f $(addprefix $(TARGET_DIR)/, $(E2FSPROGS_BINTARGETS_))
 	rm -f $(addprefix $(TARGET_DIR)/, $(E2FSPROGS_TXTTARGETS_))
-	# make symlinks
-ifeq ($(BR2_PACKAGE_E2FSPROGS_MKE2FS),y)
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext2
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext3
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext4
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext4dev
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_E2FSCK),y)
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext2
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext3
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext4
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext4dev
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_TUNE2FS),y)
-	ln -sf e2label ${TARGET_DIR}/usr/sbin/tune2fs
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_FINDFS),y)
-	ln -sf e2label ${TARGET_DIR}/usr/sbin/findfs
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_LIBUUID),y)
-	install -D ${E2FSPROGS_SRCDIR}/lib/uuid/uuid.h ${STAGING_DIR}/usr/include/uuid/uuid.h
-endif
-	touch $@
+endef
 
+E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_REMOVE_UNNEEDED
+
+define E2FSPROGS_TARGET_MKE2FS_SYMLINKS
+	ln -sf mke2fs $(TARGET_DIR)/usr/sbin/mkfs.ext2
+	ln -sf mke2fs $(TARGET_DIR)/usr/sbin/mkfs.ext3
+	ln -sf mke2fs $(TARGET_DIR)/usr/sbin/mkfs.ext4
+	ln -sf mke2fs $(TARGET_DIR)/usr/sbin/mkfs.ext4dev
+endef
+
+ifeq ($(BR2_PACKAGE_E2FSPROGS_MKE2FS),y)
+E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_MKE2FS_SYMLINKS
+endif
+
+define E2FSPROGS_TARGET_E2FSCK_SYMLINKS
+	ln -sf e2fsck $(TARGET_DIR)/usr/sbin/fsck.ext2
+	ln -sf e2fsck $(TARGET_DIR)/usr/sbin/fsck.ext3
+	ln -sf e2fsck $(TARGET_DIR)/usr/sbin/fsck.ext4
+	ln -sf e2fsck $(TARGET_DIR)/usr/sbin/fsck.ext4dev
+endef
+
+ifeq ($(BR2_PACKAGE_E2FSPROGS_E2FSCK),y)
+E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_E2FSCK_SYMLINKS
+endif
+
+define E2FSPROGS_TARGET_TUNE2FS_SYMLINK
+	ln -sf e2label $(TARGET_DIR)/usr/sbin/tune2fs
+endef
+
+ifeq ($(BR2_PACKAGE_E2FSPROGS_TUNE2FS),y)
+E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_TUNE2FS_SYMLINK
+endif
+
+define E2FSPROGS_TARGET_FINDFS_SYMLINK
+	ln -sf e2label $(TARGET_DIR)/usr/sbin/findfs
+endef
+
+ifeq ($(BR2_PACKAGE_E2FSPROGS_FINDFS),y)
+E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_FINDFS_SYMLINK
+endif
+
+$(eval $(call AUTOTARGETS,package,e2fsprogs))
+$(eval $(call AUTOTARGETS,package,e2fsprogs,host))

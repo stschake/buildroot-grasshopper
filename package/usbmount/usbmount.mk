@@ -3,45 +3,32 @@
 # usbmount
 #
 #############################################################
-USBMOUNT_VERSION=0.0.14.1
-USBMOUNT_SOURCE:=usbmount_$(USBMOUNT_VERSION).tar.gz
-USBMOUNT_SITE:=http://usbmount.alioth.debian.org/package/
-USBMOUNT_CAT:=$(ZCAT)
-USBMOUNT_DIR:=$(BUILD_DIR)/usbmount-$(USBMOUNT_VERSION)
-USBMOUNT_BINARY:=usbmount
-USBMOUNT_TARGET_BINARY:=sbin/usbmount
+USBMOUNT_VERSION = 0.0.21
+USBMOUNT_SOURCE = usbmount_$(USBMOUNT_VERSION).tar.gz
+USBMOUNT_SITE = $(BR2_DEBIAN_MIRROR)/debian/pool/main/u/usbmount
+USBMOUNT_DEPENDENCIES = udev lockfile-progs util-linux
 
-$(DL_DIR)/$(USBMOUNT_SOURCE):
-	 $(call DOWNLOAD,$(USBMOUNT_SITE),$(USBMOUNT_SOURCE))
+define USBMOUNT_INSTALL_TARGET_CMDS
+	$(INSTALL) -m 0755 -D $(@D)/usbmount $(TARGET_DIR)/usr/share/usbmount/usbmount
 
-usbmount-source: $(DL_DIR)/$(USBMOUNT_SOURCE)
+	$(INSTALL) -m 0755 -D $(@D)/00_create_model_symlink 	\
+		$(TARGET_DIR)/etc/usbmount/usbmount.d/00_create_model_symlink
+	$(INSTALL) -m 0755 -D $(@D)/00_remove_model_symlink 	\
+		$(TARGET_DIR)/etc/usbmount/usbmount.d/00_remove_model_symlink
 
-$(USBMOUNT_DIR)/.unpacked: $(DL_DIR)/$(USBMOUNT_SOURCE)
-	$(USBMOUNT_CAT) $(DL_DIR)/$(USBMOUNT_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(USBMOUNT_DIR) package/usbmount usbmount-$(USBMOUNT_VERSION).patch
-	touch $@
-
-$(TARGET_DIR)/$(USBMOUNT_TARGET_BINARY): $(USBMOUNT_DIR)/.unpacked
-	$(INSTALL) -m 0755 -D $(USBMOUNT_DIR)/usbmount $(TARGET_DIR)/$(USBMOUNT_TARGET_BINARY)
+	$(INSTALL) -m 0644 -D $(@D)/usbmount.rules $(TARGET_DIR)/lib/udev/rules.d/usbmount.rules
 	@if [ ! -f $(TARGET_DIR)/etc/usbmount/usbmount.conf ]; then \
-	        $(INSTALL) -m 0644 -D $(USBMOUNT_DIR)/usbmount.conf $(TARGET_DIR)/etc/usbmount/usbmount.conf; \
+	        $(INSTALL) -m 0644 -D $(@D)/usbmount.conf $(TARGET_DIR)/etc/usbmount/usbmount.conf; \
 	fi
-	touch -c $@
 
-usbmount: $(TARGET_DIR)/$(USBMOUNT_TARGET_BINARY)
+	mkdir -p $(addprefix $(TARGET_DIR)/media/usb,0 1 2 3 4 5 6 7)
+endef
 
-usbmount-clean:
-	rm -f $(TARGET_DIR)/$(USBMOUNT_TARGET_BINARY)
-	rm -rf $(TARGET_DIR)/etc/usbmount
+define USBMOUNT_UNINSTALL_TARGET_CMDS
+	rm -rf $(TARGET_DIR)/etc/usbmount			\
+		$(TARGET_DIR)/usr/share/usbmount/usbmount	\
+		$(TARGET_DIR)/lib/udev/rules.d/usbmount.rules	\
+		$(TARGET_DIR)/media/usb?
+endef
 
-usbmount-dirclean:
-	rm -rf $(USBMOUNT_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_USBMOUNT),y)
-TARGETS+=usbmount
-endif
+$(eval $(call GENTARGETS,package,usbmount))

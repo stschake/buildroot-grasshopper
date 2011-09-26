@@ -3,18 +3,16 @@
 # dbus-glib
 #
 #############################################################
-DBUS_GLIB_VERSION = 0.80
+DBUS_GLIB_VERSION = 0.94
 DBUS_GLIB_SOURCE = dbus-glib-$(DBUS_GLIB_VERSION).tar.gz
 DBUS_GLIB_SITE = http://dbus.freedesktop.org/releases/dbus-glib/
 DBUS_GLIB_INSTALL_STAGING = YES
-DBUS_GLIB_INSTALL_TARGET = YES
 
 DBUS_GLIB_CONF_ENV = ac_cv_have_abstract_sockets=yes \
 		ac_cv_func_posix_getpwnam_r=yes \
 		have_abstract_sockets=yes
 
 DBUS_GLIB_CONF_OPT = --localstatedir=/var \
-		--program-prefix="" \
 		--disable-tests \
 		--disable-xml-docs \
 		--with-introspect-xml=$(DBUS_HOST_INTROSPECT) \
