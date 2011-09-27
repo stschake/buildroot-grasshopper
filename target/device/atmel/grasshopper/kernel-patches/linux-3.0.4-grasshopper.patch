@@ -1,0 +1,694 @@
+diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Kconfig linux-3.0.4-gh//arch/avr32/boards/grasshopper/Kconfig
+--- linux-3.0.4-org//arch/avr32/boards/grasshopper/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/Kconfig	2011-09-26 21:42:34.114613670 +0200
+@@ -0,0 +1,5 @@
++# Grasshopper customization
++
++if BOARD_GRASSHOPPER
++
++endif	# BOARD_GRASSHOPPER
+diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Makefile linux-3.0.4-gh//arch/avr32/boards/grasshopper/Makefile
+--- linux-3.0.4-org//arch/avr32/boards/grasshopper/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/Makefile	2011-09-26 21:43:01.426613672 +0200
+@@ -0,0 +1 @@
++obj-y	+= setup.o
+diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c
+--- linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c	2011-09-26 21:55:49.143613731 +0200
+@@ -0,0 +1,477 @@
++/*
++ * init code specific for grasshopper
++ *
++ * based on icnova_base.c from in-circuit.de
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/clk.h>
++#include <linux/etherdevice.h>
++#include <linux/gpio.h>
++#include <linux/irq.h>
++#include <linux/i2c.h>
++#include <linux/i2c-gpio.h>
++#include <linux/init.h>
++#include <linux/linkage.h>
++#include <linux/platform_device.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/leds.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/ads7846.h>
++#include <linux/spi/at73c213.h>
++#include <linux/input.h>
++#include <linux/gpio_keys.h>
++
++#include <linux/fb.h>
++#include <video/atmel_lcdc.h>
++
++#include <linux/atmel-mci.h>
++#include <asm/io.h>
++#include <asm/setup.h>
++
++#include <mach/at32ap700x.h>
++#include <mach/board.h>
++#include <mach/init.h>
++#include <mach/portmux.h>
++
++#define PIN_TS_EXTINT GPIO_PIN_PA(19)
++
++static struct at73c213_board_info at73c213_data = {
++ .ssc_id = 0,
++ .shortname = "AT73C213 Sound",
++};
++
++static int ads7846_pendown_state(void)
++{
++ // active low!
++ return !gpio_get_value(PIN_TS_EXTINT);
++}
++
++static struct ads7846_platform_data ads_info = {
++ .model = 7846,
++ .vref_delay_usecs = 100,
++ .settle_delay_usecs = 800,
++ .penirq_recheck_delay_usecs = 800,
++ .x_plate_ohms = 750, /* FIXME */
++ .y_plate_ohms = 300, /* FIXME */
++ .pressure_max = 4096,
++ .debounce_max = 1,
++ .debounce_rep = 0,
++ .debounce_tol = (~0),
++ .get_pendown_state = ads7846_pendown_state,
++};
++
++static struct spi_board_info spi0_board_info[] __initdata = {
++ {
++ .modalias = "at73c213",
++ .max_speed_hz = 200000,
++ .chip_select = 1,
++ .mode = SPI_MODE_1,
++ .platform_data = &at73c213_data,
++ },
++ {
++ .modalias = "ads7846",
++ .max_speed_hz = 31250*26,
++ .chip_select = 0,
++ .platform_data = &ads_info,
++ .irq = -1,
++ },
++};
++
++/* Oscillator frequencies. These are board-specific */
++unsigned long at32_board_osc_rates[3] = {
++ [0] = 32768, /* 32.768 kHz on RTC osc */
++ [1] = 20000000, /* 20 MHz on osc0 */
++ [2] = 12000000, /* 12 MHz on osc1 */
++};
++
++/* Initialized by bootloader-specific startup code. */
++struct tag *bootloader_tags __initdata;
++
++/* Ethernet */
++struct eth_addr {
++ u8 addr[6];
++};
++static struct eth_addr __initdata hw_addr[1];
++static struct eth_platform_data __initdata eth_data[1];
++
++/* LCD */
++
++static struct fb_videomode __initdata grasshopper_tft_modes[] = {
++ {
++ .name = "480x272 @ 60Hz",
++ .refresh = 60,
++ .xres = 480, .yres = 272,
++ .pixclock = KHZ2PICOS(9000),
++
++ .left_margin = 2, .right_margin = 2,
++ .upper_margin = 12, .lower_margin = 2,
++ .hsync_len = 41, .vsync_len = 10,
++
++ .sync = 0,
++ .vmode = FB_VMODE_NONINTERLACED,
++ },
++};
++
++static struct fb_monspecs __initdata grasshopper_default_monspecs = {
++ .manufacturer = "SHA",
++ .monitor = "LQ043T3DX02",
++ .modedb = grasshopper_tft_modes,
++ .modedb_len = ARRAY_SIZE(grasshopper_tft_modes),
++ .hfmin = 15000,
++ .hfmax = 30000,
++ .vfmin = 60,
++ .vfmax = 700,
++ .dclkmax = 90000000,
++};
++
++struct atmel_lcdfb_info __initdata grasshopper_lcdc_data = {
++ .default_bpp = 24, // Color depth
++ .default_dmacon = ATMEL_LCDC_DMAEN | ATMEL_LCDC_DMA2DEN,
++ .default_lcdcon2 = (ATMEL_LCDC_DISTYPE_TFT
++ | ATMEL_LCDC_PIXELSIZE_24
++ | ATMEL_LCDC_CLKMOD_ALWAYSACTIVE
++ | ATMEL_LCDC_MEMOR_BIG),
++ .default_monspecs = &grasshopper_default_monspecs,
++ .guard_time = 2,
++ .lcdcon_is_backlight = 1,
++};
++
++// LEDs
++static struct gpio_led grasshopper_led[] = {
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM0
++ {
++ .name = "pwrled:red",
++ .gpio = GPIO_PIN_PA(22),
++ .active_low = 1,
++ },
++#endif
++ {
++ .name = "led1:green",
++ .gpio = GPIO_PIN_PA(23),
++ .default_trigger = "heartbeat",
++ },
++ {
++ .name = "led2:green",
++ .gpio = GPIO_PIN_PA(24),
++ },
++ {
++ .name = "led3:green",
++ .gpio = GPIO_PIN_PA(25),
++ },
++ {
++ .name = "led4:green",
++ .gpio = GPIO_PIN_PA(26),
++ },
++ {
++ .name = "led5:green",
++ .gpio = GPIO_PIN_PA(27),
++ },
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM0
++ {
++ .name = "led6:green",
++ .gpio = GPIO_PIN_PA(28),
++ },
++#endif
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM1
++ {
++ .name = "led7:green",
++ .gpio = GPIO_PIN_PA(29),
++ },
++#endif
++ {
++ .name = "led8:green",
++ .gpio = GPIO_PIN_PA(30),
++ },
++};
++
++static struct gpio_led_platform_data grasshopper_led_data = {
++ .num_leds = ARRAY_SIZE(grasshopper_led),
++ .leds = grasshopper_led,
++};
++
++static struct platform_device grasshopper_led_dev = {
++ .name = "leds-gpio",
++ .dev = {
++ .platform_data = &grasshopper_led_data,
++ },
++};
++
++
++/* PWM */
++#ifdef CONFIG_LEDS_ATMEL_PWM
++static struct gpio_led pwm_led[] = {
++ /* here the "gpio" is actually a PWM channel */
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM0
++ { .name = "pwm0", .gpio = 0, },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM1
++ { .name = "pwm1", .gpio = 1, },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM2
++ { .name = "pwm2", .gpio = 2, },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM3
++ { .name = "pwm3", .gpio = 3, },
++#endif
++};
++
++static struct gpio_led_platform_data pwm_led_data = {
++ .num_leds = ARRAY_SIZE(pwm_led),
++ .leds = pwm_led,
++};
++
++static struct platform_device pwm_led_dev = {
++ .name = "leds-atmel-pwm",
++ .id = -1,
++ .dev = {
++ .platform_data = &pwm_led_data,
++ },
++};
++#endif
++
++
++// Buttons
++static struct gpio_keys_button grasshopper_buttons_btn[] = {
++ {
++ .gpio = GPIO_PIN_PA(31),
++ .code = KEY_E,//BTN_0,
++ .desc = "Button 0",
++ .active_low = 1,
++ .type = EV_KEY,
++ },
++};
++
++static struct gpio_keys_platform_data grasshopper_buttons_data = {
++ .buttons = grasshopper_buttons_btn,
++ .nbuttons = 1,
++};
++
++static struct platform_device grasshopper_buttons = {
++ .name = "gpio-keys",
++ .id = -1,
++ .num_resources = 0,
++ .dev = {
++ .platform_data = &grasshopper_buttons_data,
++ },
++};
++
++/* I2C TODO*/
++#ifdef CONFIG_I2C
++static struct i2c_gpio_platform_data i2c_gpio_data = {
++ .sda_pin = GPIO_PIN_PA(6),
++ .scl_pin = GPIO_PIN_PA(7),
++ .sda_is_open_drain = 1,
++ .scl_is_open_drain = 1,
++ .udelay = 2, /* close to 100 kHz */
++};
++
++static struct platform_device i2c_gpio_device = {
++ .name = "i2c-gpio",
++ .id = 0,
++ .dev = {
++ .platform_data = &i2c_gpio_data,
++ },
++};
++
++static struct i2c_board_info grasshopper_i2c[] = {
++ };
++#endif
++
++
++
++/* MCI */
++#ifdef CONFIG_MMC_ATMELMCI
++static struct mci_platform_data __initdata mci0_data = {
++ .slot[0] = {
++ .bus_width = 4,
++ .detect_pin = GPIO_PIN_NONE,
++ .wp_pin = GPIO_PIN_NONE,
++// .detect_pin = GPIO_PIN_PC(14), /* gpio30/sdcd */
++// .wp_pin = GPIO_PIN_PC(15), /* gpio31/sdwp */
++ }
++};
++#endif
++
++/*
++ * The next two functions should go away as the boot loader is
++ * supposed to initialize the macb address registers with a valid
++ * ethernet address. But we need to keep it around for a while until
++ * we can be reasonably sure the boot loader does this.
++ *
++ * The phy_id is ignored as the driver will probe for it.
++ */
++static int __init parse_tag_ethernet(struct tag *tag)
++{
++ int i;
++
++ i = tag->u.ethernet.mac_index;
++ if (i < ARRAY_SIZE(hw_addr))
++ memcpy(hw_addr[i].addr, tag->u.ethernet.hw_address,
++ sizeof(hw_addr[i].addr));
++
++ return 0;
++}
++__tagtable(ATAG_ETHERNET, parse_tag_ethernet);
++
++static void __init set_hw_addr(struct platform_device *pdev)
++{
++ struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++ const u8 *addr;
++ void __iomem *regs;
++ struct clk *pclk;
++
++ if (!res)
++ return;
++ if (pdev->id >= ARRAY_SIZE(hw_addr))
++ return;
++
++ addr = hw_addr[pdev->id].addr;
++ if (!is_valid_ether_addr(addr))
++ return;
++
++ /*
++ * Since this is board-specific code, we'll cheat and use the
++ * physical address directly as we happen to know that it's
++ * the same as the virtual address.
++ */
++ regs = (void __iomem __force *)res->start;
++ pclk = clk_get(&pdev->dev, "pclk");
++ if (!pclk)
++ return;
++
++ clk_enable(pclk);
++ __raw_writel((addr[3] << 24) | (addr[2] << 16)
++ | (addr[1] << 8) | addr[0], regs + 0x98);
++ __raw_writel((addr[5] << 8) | addr[4], regs + 0x9c);
++ clk_disable(pclk);
++ clk_put(pclk);
++}
++
++void __init setup_board(void)
++{
++ at32_map_usart(1, 0, 0); // USART 1: /dev/ttyS0, CP2102
++ at32_setup_serial_console(0);
++
++ // grasshopper_add_spi();
++}
++
++static int __init grasshopper_init(void)
++{
++
++ /*
++ * grasshopper uses 32-bit SDRAM interface. Reserve the
++ * SDRAM-specific pins so that nobody messes with them.
++ */
++ at32_reserve_pin(GPIO_PIOE_BASE, ATMEL_EBI_PE_DATA_ALL);
++
++ at32_add_device_usart(0);
++
++ at32_add_device_lcdc(0, &grasshopper_lcdc_data,
++ fbmem_start, fbmem_size,
++ ATMEL_LCDC_PRI_CONTROL | ATMEL_LCDC_PRI_24BIT);
++
++ // Ethernet
++ set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
++
++ // I2C / TWI
++#ifdef CONFIG_I2C
++ /* all these i2c/smbus pins should have external pullups for
++ * open-drain sharing among all I2C devices. SDA and SCL do;
++ * PB28/EXTINT3 doesn't; it should be SMBALERT# (for PMBus),
++ * but it's not available off-board.
++ */
++ /*at32_select_periph(GPIO_PIOB_BASE, 1 << 28, 0, AT32_GPIOF_PULLUP);
++ at32_select_gpio(i2c_gpio_data.sda_pin,
++ AT32_GPIOF_MULTIDRV | AT32_GPIOF_OUTPUT | AT32_GPIOF_HIGH);
++ at32_select_gpio(i2c_gpio_data.scl_pin,
++ AT32_GPIOF_MULTIDRV | AT32_GPIOF_OUTPUT | AT32_GPIOF_HIGH);
++ platform_device_register(&i2c_gpio_device);
++ i2c_register_board_info(0, grasshopper_i2c, ARRAY_SIZE(grasshopper_i2c));
++
++*/
++#endif
++
++ // USB
++ //at32_add_device_usba(0, NULL);
++
++#ifdef CONFIG_MMC_ATMELMCI
++ at32_add_device_mci(0, &mci0_data); /* MMC/SD */
++#endif
++
++ printk("registering penirq gpio-pin...\n");
++ at32_select_gpio(PIN_TS_EXTINT, AT32_GPIOF_DEGLITCH);
++ spi0_board_info[1].irq = gpio_to_irq(PIN_TS_EXTINT);
++ printk("done\n");
++ //at32_select_periph(PIN_TS_EXTINT, GPIO_PERIPH_A, AT32_GPIOF_DEGLITCH);
++ printk("registering SSC1 for external DAC...\n");
++ at32_add_device_ssc(0, ATMEL_SSC_TX);
++ printk("registering SPI for touchscreen and sound...\n");
++
++ struct clk *gclk;
++ struct clk *pll;
++
++ gclk = clk_get(NULL, "gclk0");
++ if (IS_ERR(gclk))
++ {
++ printk("failed to get clk gclk0\n");
++ }
++ else
++ {
++ pll = clk_get(NULL, "pll0");
++ if (IS_ERR(pll))
++ {
++ printk("failed to get clk pll0\n");
++ }
++ else
++ {
++ if (clk_set_parent(gclk, pll))
++ {
++ printk("failed to set pll0 as parent for DAC clock\n");
++ }
++ else
++ {
++ at32_select_periph(GPIO_PIOA_BASE, (1 << 30), GPIO_PERIPH_A, 0);
++ at73c213_data.dac_clk = gclk;
++ }
++ }
++
++ }
++
++ at32_add_device_spi(0, spi0_board_info, ARRAY_SIZE(spi0_board_info));
++ printk("done\n");
++
++ // PS/2
++#ifdef CONFIG_SERIO_AT32PSIF
++ //at32_add_device_psif(0);
++#endif
++
++ // AC97
++// at32_select_gpio(GPIO_AC_OUTPUT_SELECT,AT32_GPIOF_OUTPUT);
++// at32_select_gpio(GPIO_AC_RESET,AT32_GPIOF_OUTPUT);
++// at32_add_device_ac97c(0);
++
++ return 0;
++}
++postcore_initcall(grasshopper_init);
++
++//static int __init grasshopper_arch_init(void)
++//{
++// /* PB30 is the otherwise unused jumper on the mainboard, with an
++// * external pullup; the jumper grounds it. Use it however you
++// * like, including letting U-Boot or Linux tweak boot sequences.
++// */
++// at32_select_gpio(GPIO_PIN_PB(30), 0);
++// gpio_request(GPIO_PIN_PB(30), "j15");
++// gpio_direction_input(GPIO_PIN_PB(30));
++// gpio_export(GPIO_PIN_PB(30), false);
++//
++// /* set_irq_type() after the arch_initcall for EIC has run, and
++// * before the I2C subsystem could try using this IRQ.
++// */
++// return set_irq_type(AT32_EXTINT(3), IRQ_TYPE_EDGE_FALLING);
++//}
++//arch_initcall(grasshopper_arch_init);
+diff -rupdN linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig
+--- linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig	2011-08-29 22:56:30.000000000 +0200
+@@ -0,0 +1,157 @@
++CONFIG_EXPERIMENTAL=y
++# CONFIG_LOCALVERSION_AUTO is not set
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_RELAY=y
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++# CONFIG_SYSCTL_SYSCALL is not set
++# CONFIG_BASE_FULL is not set
++# CONFIG_COMPAT_BRK is not set
++CONFIG_PROFILING=y
++CONFIG_OPROFILE=m
++# CONFIG_KPROBES is not set
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_IOSCHED_DEADLINE is not set
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_BOARD_ATNGW100_MKI=y
++# CONFIG_OWNERSHIP_TRACE is not set
++CONFIG_NMI_DEBUGGING=y
++CONFIG_PM=y
++CONFIG_CPU_FREQ=y
++# CONFIG_CPU_FREQ_STAT is not set
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPU_FREQ_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_AT32AP=y
++CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_XFRM_USER=y
++CONFIG_NET_KEY=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_ADVANCED_ROUTER=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_MROUTE=y
++CONFIG_IP_PIMSM_V1=y
++CONFIG_SYN_COOKIES=y
++CONFIG_INET_AH=y
++CONFIG_INET_ESP=y
++CONFIG_INET_IPCOMP=y
++# CONFIG_INET_LRO is not set
++CONFIG_IPV6=y
++CONFIG_INET6_AH=y
++CONFIG_INET6_ESP=y
++CONFIG_INET6_IPCOMP=y
++CONFIG_NETFILTER=y
++# CONFIG_NETFILTER_ADVANCED is not set
++CONFIG_NETFILTER_XTABLES=y
++# CONFIG_IP_NF_TARGET_ULOG is not set
++CONFIG_BRIDGE=m
++CONFIG_VLAN_8021Q=m
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++# CONFIG_FW_LOADER is not set
++CONFIG_MTD=y
++CONFIG_MTD_PARTITIONS=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_CFI=y
++CONFIG_MTD_CFI_AMDSTD=y
++CONFIG_MTD_PHYSMAP=y
++CONFIG_MTD_DATAFLASH=y
++CONFIG_MTD_UBI=y
++CONFIG_BLK_DEV_LOOP=m
++CONFIG_BLK_DEV_NBD=m
++CONFIG_BLK_DEV_RAM=m
++CONFIG_MISC_DEVICES=y
++CONFIG_ATMEL_TCLIB=y
++CONFIG_NETDEVICES=y
++CONFIG_TUN=m
++CONFIG_NET_ETHERNET=y
++CONFIG_MACB=y
++# CONFIG_NETDEV_1000 is not set
++# CONFIG_NETDEV_10000 is not set
++CONFIG_PPP=m
++CONFIG_PPP_FILTER=y
++CONFIG_PPP_ASYNC=m
++CONFIG_PPP_DEFLATE=m
++CONFIG_PPP_BSDCOMP=m
++CONFIG_PPP_MPPE=m
++CONFIG_PPPOE=m
++# CONFIG_INPUT is not set
++# CONFIG_SERIO is not set
++# CONFIG_VT is not set
++# CONFIG_DEVKMEM is not set
++CONFIG_SERIAL_ATMEL=y
++CONFIG_SERIAL_ATMEL_CONSOLE=y
++# CONFIG_LEGACY_PTYS is not set
++# CONFIG_HW_RANDOM is not set
++CONFIG_I2C=m
++CONFIG_I2C_CHARDEV=m
++CONFIG_I2C_GPIO=m
++CONFIG_SPI=y
++CONFIG_SPI_ATMEL=y
++CONFIG_SPI_SPIDEV=m
++CONFIG_GPIO_SYSFS=y
++# CONFIG_HWMON is not set
++CONFIG_WATCHDOG=y
++CONFIG_AT32AP700X_WDT=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_VBUS_DRAW=350
++CONFIG_USB_ZERO=m
++CONFIG_USB_ETH=m
++CONFIG_USB_GADGETFS=m
++CONFIG_USB_FILE_STORAGE=m
++CONFIG_USB_G_SERIAL=m
++CONFIG_USB_CDC_COMPOSITE=m
++CONFIG_MMC=y
++CONFIG_MMC_TEST=m
++CONFIG_MMC_ATMELMCI=y
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_TIMER=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_AT32AP700X=y
++CONFIG_DMADEVICES=y
++CONFIG_EXT2_FS=y
++CONFIG_EXT3_FS=y
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++# CONFIG_EXT3_FS_XATTR is not set
++CONFIG_EXT4_FS=y
++# CONFIG_EXT4_FS_XATTR is not set
++# CONFIG_DNOTIFY is not set
++CONFIG_FUSE_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_FAT_DEFAULT_CODEPAGE=850
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_CONFIGFS_FS=y
++CONFIG_JFFS2_FS=y
++CONFIG_UBIFS_FS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_ROOT_NFS=y
++CONFIG_NFSD=m
++CONFIG_NFSD_V3=y
++CONFIG_CIFS=m
++CONFIG_NLS_CODEPAGE_437=m
++CONFIG_NLS_CODEPAGE_850=m
++CONFIG_NLS_ISO8859_1=m
++CONFIG_NLS_UTF8=m
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_FS=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DETECT_HUNG_TASK=y
++CONFIG_FRAME_POINTER=y
+diff -rupdN linux-3.0.4-org//arch/avr32/Kconfig linux-3.0.4-gh//arch/avr32/Kconfig
+--- linux-3.0.4-org//arch/avr32/Kconfig	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.4-gh//arch/avr32/Kconfig	2011-09-26 21:40:12.059613658 +0200
+@@ -156,6 +156,15 @@ config BOARD_MERISC
+ config BOARD_MIMC200
+ 	bool "MIMC200 CPU board"
+ 	select CPU_AT32AP7000
++
++config BOARD_GRASSHOPPER
++	bool "Grasshopper Board"
++	select CPU_AT32AP7000
++	help
++	  Grasshopper is the Nickname of the AVR32-based ICNova
++	  AP7000 base board that is distributed by IN-Circuit.
++
++	  For more information see: http://www.ic-board.de/
+ endchoice
+ 
+ source "arch/avr32/boards/atstk1000/Kconfig"
+@@ -163,6 +172,7 @@ source "arch/avr32/boards/atngw100/Kconf
+ source "arch/avr32/boards/hammerhead/Kconfig"
+ source "arch/avr32/boards/favr-32/Kconfig"
+ source "arch/avr32/boards/merisc/Kconfig"
++source "arch/avr32/boards/grasshopper/Kconfig"
+ 
+ choice
+ 	prompt "Boot loader type"
+diff -rupdN linux-3.0.4-org//arch/avr32/Makefile linux-3.0.4-gh//arch/avr32/Makefile
+--- linux-3.0.4-org//arch/avr32/Makefile	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.4-gh//arch/avr32/Makefile	2011-09-26 21:41:00.603613663 +0200
+@@ -37,6 +37,7 @@ core-$(CONFIG_BOARD_HAMMERHEAD)		+= arch
+ core-$(CONFIG_BOARD_FAVR_32)		+= arch/avr32/boards/favr-32/
+ core-$(CONFIG_BOARD_MERISC)		+= arch/avr32/boards/merisc/
+ core-$(CONFIG_BOARD_MIMC200)		+= arch/avr32/boards/mimc200/
++core-$(CONFIG_BOARD_GRASSHOPPER)	+= arch/avr32/boards/grasshopper/
+ core-$(CONFIG_LOADER_U_BOOT)		+= arch/avr32/boot/u-boot/
+ core-y					+= arch/avr32/kernel/
+ core-y					+= arch/avr32/mm/
