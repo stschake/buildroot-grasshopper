@@ -13,6 +13,11 @@ BR2_TARGET_ROOTFS_JFFS2_BE=y
 BR2_TARGET_ROOTFS_TAR=y
 BR2_TARGET_ROOTFS_TAR_NONE=y
 
+# File System structure
+BR2_ROOTFS_DEVICE_TABLE="target/device/atmel/grasshopper/device_table.txt"
+BR2_ROOTFS_STATIC_DEVICE_TABLE="target/device/atmel/grasshopper/device_table_dev.txt"
+
+
 # Bootloader
 BR2_TARGET_UBOOT=y
 BR2_TARGET_UBOOT_BOARDNAME="grasshopper"
@@ -26,4 +31,4 @@ BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="3.0.4"
 BR2_LINUX_KERNEL_PATCH="target/device/atmel/grasshopper/kernel-patches"
 BR2_LINUX_KERNEL_USE_DEFCONFIG=y
 BR2_LINUX_KERNEL_DEFCONFIG="grasshopper"
-
+BR2_LINUX_KERNEL_INSTALL_TARGET=y
