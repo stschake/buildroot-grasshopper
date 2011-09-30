@@ -4,7 +4,7 @@
 # gstreamer
 #
 #############################################################
-GSTREAMER_VERSION = 0.10.32
+GSTREAMER_VERSION = 0.10.35
 GSTREAMER_SOURCE = gstreamer-$(GSTREAMER_VERSION).tar.bz2
 GSTREAMER_SITE = http://gstreamer.freedesktop.org/src/gstreamer
 GSTREAMER_INSTALL_STAGING = YES
@@ -25,4 +25,4 @@ GSTREAMER_CONF_OPT = \
 
 GSTREAMER_DEPENDENCIES = libglib2 host-pkg-config
 
-$(eval $(call AUTOTARGETS,package/multimedia,gstreamer))
+$(eval $(call AUTOTARGETS))

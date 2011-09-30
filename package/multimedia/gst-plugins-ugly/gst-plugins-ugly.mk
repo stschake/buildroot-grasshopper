@@ -3,7 +3,7 @@
 # gst-plugins-ugly
 #
 #############################################################
-GST_PLUGINS_UGLY_VERSION = 0.10.17
+GST_PLUGINS_UGLY_VERSION = 0.10.18
 GST_PLUGINS_UGLY_SOURCE = gst-plugins-ugly-$(GST_PLUGINS_UGLY_VERSION).tar.bz2
 GST_PLUGINS_UGLY_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-ugly
 
@@ -74,4 +74,4 @@ else
 GST_PLUGINS_UGLY_CONF_OPT += --disable-mpeg2dec
 endif
 
-$(eval $(call AUTOTARGETS,package/multimedia,gst-plugins-ugly))
+$(eval $(call AUTOTARGETS))
