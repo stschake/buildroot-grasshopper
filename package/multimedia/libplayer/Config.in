@@ -1,40 +1,31 @@
 config BR2_PACKAGE_LIBPLAYER
+	depends on BR2_LARGEFILE
 	bool "libplayer"
 	help
-		libplayer provides a generic A/V API that relies on various multimedia player for Linux systems. It currently supports MPlayer, xine VLC and GStreamer only.
+	  libplayer provides a generic A/V API that relies on various multimedia
+	  player for Linux systems. It currently supports MPlayer, xine VLC and
+	  GStreamer only
 
-		http://libplayer.geexbox.org/
+	  http://libplayer.geexbox.org/
 
-menuconfig BR2_PACKAGE_LIBPLAYER_FEATURES
-	bool "libplayer features"
-	depends on BR2_PACKAGE_LIBPLAYER
-	help
-		Selects supported features.
+if BR2_PACKAGE_LIBPLAYER
+config BR2_PACKAGE_LIBPLAYER_MPLAYER
+	bool "mplayer backend"
+	select BR2_PACKAGE_MPLAYER
 
-if BR2_PACKAGE_LIBPLAYER_FEATURES
+config BR2_PACKAGE_LIBPLAYER_GSTREAMER
+	bool "gstreamer backend"
+	depends on BR2_USE_WCHAR # glib2
+	select BR2_PACKAGE_GSTREAMER
 
-	comment "Wrappers"
+comment "gstreamer backend requires a toolchain with WCHAR support"
+	depends on !BR2_USE_WCHAR
 
-	config BR2_PACKAGE_LIBPLAYER_WRAPPER_MPLAYER
-	depends on BR2_PACKAGE_MPLAYER
-	bool "MPlayer"
-
-	config BR2_PACKAGE_LIBPLAYER_WRAPPER_GSTREAMER
-	depends on BR2_PACKAGE_GSTREAMER
-	bool "GStreamer"
-
-	config BR2_PACKAGE_LIBPLAYER_WRAPPER_XINE
-	depends on BR2_PACKAGE_XINE
-	bool "Xine"
-
-	config BR2_PACKAGE_LIBPLAYER_WRAPPER_VLC
-	depends on BR2_PACKAGE_VLC
-	bool "VLC"
-
-	comment "Advanced"
-
-	config BR2_PACKAGE_LIBPLAYER_X11
-	depends on BR2_PACKAGE_XSERVER_XORG_SERVER
-	bool "X11 support"
-
+config BR2_PACKAGE_LIBPLAYER_PYTHON
+	depends on BR2_PACKAGE_PYTHON
+	depends on BROKEN # player_init params, builds for host
+	bool "Libplayer python bindings"
 endif
+
+comment "libplayer requires a toolchain with LARGEFILE support"
+	depends on !BR2_LARGEFILE
