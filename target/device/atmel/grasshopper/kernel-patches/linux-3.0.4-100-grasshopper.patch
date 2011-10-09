@@ -601,8 +601,8 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +//arch_initcall(grasshopper_arch_init);
 diff -rupdN linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig
 --- linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig	2011-09-29 10:53:17.135211507 +0200
-@@ -0,0 +1,185 @@
++++ linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig	2011-10-09 15:29:18.402712322 +0200
+@@ -0,0 +1,182 @@
 +CONFIG_EXPERIMENTAL=y
 +# CONFIG_LOCALVERSION_AUTO is not set
 +CONFIG_SYSVIPC=y
@@ -770,12 +770,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.
 +CONFIG_CIFS=m
 +CONFIG_NLS=y
 +CONFIG_NLS_CODEPAGE_437=y
-+CONFIG_NLS_CODEPAGE_850=y
-+CONFIG_NLS_CODEPAGE_852=y
 +CONFIG_NLS_CODEPAGE_1250=y
 +CONFIG_NLS_ASCII=y
 +CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_ISO8859_2=y
 +CONFIG_NLS_ISO8859_15=y
 +CONFIG_NLS_UTF8=y
 +CONFIG_MAGIC_SYSRQ=y
