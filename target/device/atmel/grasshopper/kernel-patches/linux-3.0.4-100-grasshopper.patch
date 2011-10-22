@@ -114,8 +114,8 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Kconfig linux-3.0.4-g
 +endif	# BOARD_GRASSHOPPER
 diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/led.c
 --- linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/led.c	2011-10-18 21:38:24.578503572 +0200
-@@ -0,0 +1,151 @@
++++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/led.c	2011-10-22 00:54:33.765592177 +0200
+@@ -0,0 +1,155 @@
 +/*
 + * init code specific for grasshoppers LEDs
 + *
@@ -123,12 +123,14 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh/
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
-+ 
++
++#include <linux/gpio.h>
 +#include <linux/init.h>
 +#include <linux/leds.h>
 +#include <linux/platform_device.h>
 +
 +#include <mach/at32ap700x.h>
++#include <mach/board.h>
 +#include <mach/gpio.h>
 +#include <mach/init.h>
 +#include <mach/portmux.h>
@@ -237,7 +239,7 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh/
 +};
 +#endif
 +
-+static void __init grasshopper_setup_leds(void)
++static int __init grasshopper_setup_leds(void)
 +{
 +    printk("Grasshopper: Setting up %d LEDs\n", grasshopper_led_data.num_leds);
 +    //for (i=0; i<grasshopper_led_data.num_leds; i++)
@@ -261,9 +263,11 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh/
 +#endif
 +    );
 +
-+    printk("Grasshopper: Setting up %d PWMs\n", ARRAY_SIZE(pwm_led));
++    printk("Grasshopper: Setting up %d PWMs\n", pwm_led_data.num_leds);
 +    platform_device_register(&pwm_led_dev);
 +#endif
++
++    return 0;
 +}
 +
 +arch_initcall(grasshopper_setup_leds);
@@ -276,8 +280,8 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Makefile linux-3.0.4-
 +obj-y	+= setup.o
 diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c
 --- linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c	2011-10-18 21:46:02.434519366 +0200
-@@ -0,0 +1,312 @@
++++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c	2011-10-19 01:01:30.526923942 +0200
+@@ -0,0 +1,309 @@
 +/*
 + * init code specific for grasshopper
 + *
@@ -531,7 +535,7 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +    * SDRAM-specific pins so that nobody messes with them.
 +    */
 +    at32_reserve_pin(GPIO_PIOE_BASE, ATMEL_EBI_PE_DATA_ALL);
-+
++    at32_add_device_usba(0, NULL);
 +    at32_add_device_usart(0);
 +
 +#ifdef CONFIG_GRASSHOPPER_LCD
@@ -540,24 +544,21 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +        ATMEL_LCDC_PRI_CONTROL | ATMEL_LCDC_PRI_24BIT);
 +#endif
 +    // Ethernet
-+    set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
-+
-+    // USB
-+    //at32_add_device_usba(0, NULL);
++//    set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
 +
 +#ifdef CONFIG_MMC_ATMELMCI
-+    at32_add_device_mci(0, &mci0_data); /* MMC/SD */
++//    at32_add_device_mci(0, &mci0_data); /* MMC/SD */
 +#endif
 +
-+    printk("registering penirq gpio-pin...\n");
-+    at32_select_gpio(PIN_TS_EXTINT, AT32_GPIOF_DEGLITCH);
-+    spi0_board_info[1].irq = gpio_to_irq(PIN_TS_EXTINT);
-+    printk("done\n");
++//    printk("registering penirq gpio-pin...\n");
++//    at32_select_gpio(PIN_TS_EXTINT, AT32_GPIOF_DEGLITCH);
++//    spi0_board_info[1].irq = gpio_to_irq(PIN_TS_EXTINT);
++//    printk("done\n");
 +
 +    //at32_select_periph(PIN_TS_EXTINT, GPIO_PERIPH_A, AT32_GPIOF_DEGLITCH);
-+    printk("registering SSC1 for external DAC...\n");
-+    at32_add_device_ssc(0, ATMEL_SSC_TX);
-+    printk("registering SPI for touchscreen and sound...\n");
++//    printk("registering SSC1 for external DAC...\n");
++//    at32_add_device_ssc(0, ATMEL_SSC_TX);
++//    printk("registering SPI for touchscreen and sound...\n");
 +/*
 +    struct clk *gclk;
 +    struct clk *pll;
@@ -579,8 +580,8 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +        }
 +    }
 +*/
-+    at32_add_device_spi(0, spi0_board_info, ARRAY_SIZE(spi0_board_info));
-+    printk("done\n");
++//    at32_add_device_spi(0, spi0_board_info, ARRAY_SIZE(spi0_board_info));
++//    printk("done\n");
 +
 +    for (i=0; i<grasshopper_buttons_data.nbuttons;i++)
 +        at32_select_gpio(grasshopper_buttons_data.buttons[i].gpio,
