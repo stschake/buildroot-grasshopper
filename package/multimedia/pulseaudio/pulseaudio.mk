@@ -14,7 +14,7 @@ PULSEAUDIO_CONF_OPT = \
 	--disable-legacy-database-entry-format
 
 PULSEAUDIO_DEPENDENCIES = \
-	host-pkg-config libtool json-c libsndfile speex \
+	host-pkg-config libtool json-c libsndfile speex host-intltool \
 	$(if $(BR2_PACKAGE_LIBINTL),libintl) \
 	$(if $(BR2_PACKAGE_LIBATOMIC_OPS),libatomic_ops) \
 	$(if $(BR2_PACKAGE_LIBSAMPLERATE),libsamplerate) \
@@ -28,6 +28,16 @@ PULSEAUDIO_DEPENDENCIES = \
 	$(if $(BR2_PACKAGE_OPENSSL),openssl) \
 	$(if $(BR2_PACKAGE_FFTW),fftw) \
 	$(if $(BR2_PACKAGE_ORC),orc)
+
+# pulseaudio alsa backend needs pcm/mixer apis
+ifneq ($(BR2_PACKAGE_ALSA_LIB_PCM)$(BR2_PACKAGE_ALSA_LIB_MIXER),yy)
+PULSEAUDIO_CONF_OPT += --disable-alsa
+endif
+
+# gtk support needs x backend
+ifneq ($(BR2_PACKAGE_LIBGTK2)$(BR2_PACKAGE_XORG),yy)
+PULSEAUDIO_CONF_OPT += --disable-gtk2
+endif
 
 ifneq ($(BR2_PACKAGE_VALA),y)
 define PULSEAUDIO_REMOVE_VALA
