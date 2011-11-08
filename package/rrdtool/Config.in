@@ -13,3 +13,15 @@ config BR2_PACKAGE_RRDTOOL
 
 comment "rrdtool requires a toolchain with WCHAR support"
 	depends on !BR2_USE_WCHAR
+	
+if BR2_PACKAGE_RRDTOOL
+
+config BR2_PACKAGE_RRDTOOL_NOMMAP
+	bool "rrdtool (no mmap)"
+	default n
+	help
+	  This option disables the memory mapped file usage of the RRDTool.
+	  This is useful in case the target device uses a flash drive or
+	  the used filesystem does not fully support memory mapped IO
+	  (such as JFFS2).
+endif

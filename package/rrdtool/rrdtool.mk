@@ -13,6 +13,10 @@ RRDTOOL_CONF_ENV = rd_cv_ieee_works=yes rd_cv_null_realloc=nope \
 RRDTOOL_CONF_OPT = --disable-perl --disable-python --disable-ruby \
 			--disable-tcl --program-transform-name=''
 
+ifeq ($(BR2_PACKAGE_RRDTOOL_NOMMAP),y)
+RRDTOOL_CONF_OPT += --disable-mmap
+endif
+
 define RRDTOOL_REMOVE_EXAMPLES
 	rm -rf $(TARGET_DIR)/usr/share/rrdtool/examples
 endef
