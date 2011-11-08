@@ -1,6 +1,6 @@
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/button.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/button.c
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/button.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/button.c	2011-10-22 10:22:18.582767288 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/button.c linux-3.0.8-gh//arch/avr32/boards/grasshopper/button.c
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/button.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/button.c	2011-10-22 10:22:18.582767288 +0200
 @@ -0,0 +1,55 @@
 +/*
 + * init code specific for grasshoppers Buttons
@@ -57,9 +57,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/button.c linux-3.0.4-
 +    return 0;
 +}
 +arch_initcall(grasshopper_init_buttons);
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/flash.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/flash.c
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/flash.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/flash.c	2011-09-29 10:36:04.148804693 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/flash.c linux-3.0.8-gh//arch/avr32/boards/grasshopper/flash.c
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/flash.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/flash.c	2011-09-29 10:36:04.148804693 +0200
 @@ -0,0 +1,101 @@
 +/*
 + * GRASSHOPPER board-specific flash initialization
@@ -162,18 +162,18 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/flash.c linux-3.0.4-g
 +	return 0;
 +}
 +device_initcall(grasshopper_flash_init);
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Kconfig linux-3.0.4-gh//arch/avr32/boards/grasshopper/Kconfig
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/Kconfig	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/Kconfig	2011-09-29 10:36:04.148804693 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/Kconfig linux-3.0.8-gh//arch/avr32/boards/grasshopper/Kconfig
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/Kconfig	2011-09-29 10:36:04.148804693 +0200
 @@ -0,0 +1,5 @@
 +# Grasshopper customization
 +
 +if BOARD_GRASSHOPPER
 +
 +endif	# BOARD_GRASSHOPPER
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/led.c
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/led.c	2011-10-22 00:54:33.765592177 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/led.c linux-3.0.8-gh//arch/avr32/boards/grasshopper/led.c
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/led.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/led.c	2011-10-22 00:54:33.765592177 +0200
 @@ -0,0 +1,155 @@
 +/*
 + * init code specific for grasshoppers LEDs
@@ -330,18 +330,117 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/led.c linux-3.0.4-gh/
 +}
 +
 +arch_initcall(grasshopper_setup_leds);
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/Makefile linux-3.0.4-gh//arch/avr32/boards/grasshopper/Makefile
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/Makefile	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/Makefile	2011-10-22 10:16:26.038755126 +0200
-@@ -0,0 +1,4 @@
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/mac.c linux-3.0.8-gh//arch/avr32/boards/grasshopper/mac.c
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/mac.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/mac.c	2011-10-23 01:19:59.972470681 +0200
+@@ -0,0 +1,94 @@
++/*
++ * Init Code for the ethernet interface of the Grasshopper board.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/clk.h>
++#include <linux/etherdevice.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++
++#include <asm/setup.h>
++
++#include <mach/board.h>
++ 
++/* Initialized by bootloader-specific startup code. */
++struct tag *bootloader_tags __initdata;
++
++/* Ethernet */
++struct eth_addr {
++    u8 addr[6];
++};
++
++static struct eth_addr __initdata hw_addr[1];
++static struct eth_platform_data __initdata eth_data[] = {
++    {
++        .phy_mask   = ~(1U << 0),
++    },
++};
++
++/*
++ * The next two functions should go away as the boot loader is
++ * supposed to initialize the macb address registers with a valid
++ * ethernet address. But we need to keep it around for a while until
++ * we can be reasonably sure the boot loader does this.
++ *
++ * The phy_id is ignored as the driver will probe for it.
++ */
++static int __init parse_tag_ethernet(struct tag *tag)
++{
++    int i;
++
++    i = tag->u.ethernet.mac_index;
++    if (i < ARRAY_SIZE(hw_addr))
++        memcpy(hw_addr[i].addr, tag->u.ethernet.hw_address,
++                sizeof(hw_addr[i].addr));
++
++    return 0;
++}
++__tagtable(ATAG_ETHERNET, parse_tag_ethernet);
++
++static void __init set_hw_addr(struct platform_device *pdev)
++{
++    struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++    const u8 *addr;
++    void __iomem *regs;
++    struct clk *pclk;
++
++    if (!res)
++        return;
++    if (pdev->id >= ARRAY_SIZE(hw_addr))
++        return;
++
++    addr = hw_addr[pdev->id].addr;
++    if (!is_valid_ether_addr(addr))
++        return;
++
++    /*
++    * Since this is board-specific code, we'll cheat and use the
++    * physical address directly as we happen to know that it's
++    * the same as the virtual address.
++    */
++    regs = (void __iomem __force *)res->start;
++    pclk = clk_get(&pdev->dev, "pclk");
++    if (!pclk)
++        return;
++
++    clk_enable(pclk);
++    __raw_writel((addr[3] << 24) | (addr[2] << 16)
++            | (addr[1] << 8) | addr[0], regs + 0x98);
++    __raw_writel((addr[5] << 8) | addr[4], regs + 0x9c);
++    clk_disable(pclk);
++    clk_put(pclk);
++}
++
++static int __init grasshopper_init_mac(void)
++{
++    printk("Grasshopper: Setting up Ethernet\n");
++    set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
++    
++    return 0;
++}
++arch_initcall(grasshopper_init_mac);
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/Makefile linux-3.0.8-gh//arch/avr32/boards/grasshopper/Makefile
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/Makefile	2011-10-23 00:58:45.920426731 +0200
+@@ -0,0 +1,5 @@
 +obj-y	+= button.o
 +obj-y	+= flash.o
 +obj-y	+= led.o
++obj-y	+= mac.o
 +obj-y	+= setup.o
-diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c
---- linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/boards/grasshopper/setup.c	2011-10-22 11:01:57.762849361 +0200
-@@ -0,0 +1,278 @@
+diff -rupdN linux-3.0.8-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.8-gh//arch/avr32/boards/grasshopper/setup.c
+--- linux-3.0.8-org//arch/avr32/boards/grasshopper/setup.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/boards/grasshopper/setup.c	2011-10-23 00:59:44.112428739 +0200
+@@ -0,0 +1,210 @@
 +/*
 + * init code specific for grasshopper
 + *
@@ -352,7 +451,6 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 + * published by the Free Software Foundation.
 + */
 +#include <linux/clk.h>
-+#include <linux/etherdevice.h>
 +#include <linux/gpio.h>
 +#include <linux/irq.h>
 +#include <linux/i2c.h>
@@ -431,16 +529,6 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +    [2] = 12000000, /* 12 MHz on osc1 */
 +};
 +
-+/* Initialized by bootloader-specific startup code. */
-+struct tag *bootloader_tags __initdata;
-+
-+/* Ethernet */
-+struct eth_addr {
-+    u8 addr[6];
-+};
-+static struct eth_addr __initdata hw_addr[1];
-+static struct eth_platform_data __initdata eth_data[1];
-+
 +/* LCD */
 +#ifdef CONFIG_GRASSHOPPER_LCD
 +static struct fb_videomode __initdata grasshopper_tft_modes[] = {
@@ -497,61 +585,6 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +};
 +#endif
 +
-+/*
-+ * The next two functions should go away as the boot loader is
-+ * supposed to initialize the macb address registers with a valid
-+ * ethernet address. But we need to keep it around for a while until
-+ * we can be reasonably sure the boot loader does this.
-+ *
-+ * The phy_id is ignored as the driver will probe for it.
-+ */
-+static int __init parse_tag_ethernet(struct tag *tag)
-+{
-+    int i;
-+
-+    i = tag->u.ethernet.mac_index;
-+    if (i < ARRAY_SIZE(hw_addr))
-+        memcpy(hw_addr[i].addr, tag->u.ethernet.hw_address,
-+    sizeof(hw_addr[i].addr));
-+
-+    return 0;
-+}
-+__tagtable(ATAG_ETHERNET, parse_tag_ethernet);
-+
-+static void __init set_hw_addr(struct platform_device *pdev)
-+{
-+    struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+    const u8 *addr;
-+    void __iomem *regs;
-+    struct clk *pclk;
-+
-+    if (!res)
-+        return;
-+    if (pdev->id >= ARRAY_SIZE(hw_addr))
-+        return;
-+
-+    addr = hw_addr[pdev->id].addr;
-+    if (!is_valid_ether_addr(addr))
-+        return;
-+
-+    /*
-+    * Since this is board-specific code, we'll cheat and use the
-+    * physical address directly as we happen to know that it's
-+    * the same as the virtual address.
-+    */
-+    regs = (void __iomem __force *)res->start;
-+    pclk = clk_get(&pdev->dev, "pclk");
-+    if (!pclk)
-+        return;
-+
-+    clk_enable(pclk);
-+    __raw_writel((addr[3] << 24) | (addr[2] << 16)
-+            | (addr[1] << 8) | addr[0], regs + 0x98);
-+    __raw_writel((addr[5] << 8) | addr[4], regs + 0x9c);
-+    clk_disable(pclk);
-+    clk_put(pclk);
-+}
-+
 +void __init setup_board(void)
 +{
 +    at32_map_usart(1, 0, 0); // USART 1: /dev/ttyS0, CP2102
@@ -577,8 +610,6 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +        fbmem_start, fbmem_size,
 +        ATMEL_LCDC_PRI_CONTROL | ATMEL_LCDC_PRI_24BIT);
 +#endif
-+    // Ethernet
-+    set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
 +
 +#ifdef CONFIG_MMC_ATMELMCI
 +//    at32_add_device_mci(0, &mci0_data); /* MMC/SD */
@@ -620,9 +651,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.4-g
 +    return 0;
 +}
 +arch_initcall(grasshopper_init);
-diff -rupdN linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig
---- linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig	1970-01-01 01:00:00.000000000 +0100
-+++ linux-3.0.4-gh//arch/avr32/configs/grasshopper_defconfig	2011-10-11 12:37:32.716082721 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.8-gh//arch/avr32/configs/grasshopper_defconfig
+--- linux-3.0.8-org//arch/avr32/configs/grasshopper_defconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.8-gh//arch/avr32/configs/grasshopper_defconfig	2011-10-11 12:37:32.716082721 +0200
 @@ -0,0 +1,183 @@
 +CONFIG_EXPERIMENTAL=y
 +# CONFIG_LOCALVERSION_AUTO is not set
@@ -807,9 +838,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.
 +CONFIG_CRC_CCITT=m
 +CONFIG_CRC_ITU_T=m
 +CONFIG_CRC7=m
-diff -rupdN linux-3.0.4-org//arch/avr32/include/asm/kprobes.h linux-3.0.4-gh//arch/avr32/include/asm/kprobes.h
---- linux-3.0.4-org//arch/avr32/include/asm/kprobes.h	2011-08-29 22:56:30.000000000 +0200
-+++ linux-3.0.4-gh//arch/avr32/include/asm/kprobes.h	2011-09-29 10:36:04.153804693 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/include/asm/kprobes.h linux-3.0.8-gh//arch/avr32/include/asm/kprobes.h
+--- linux-3.0.8-org//arch/avr32/include/asm/kprobes.h	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.8-gh//arch/avr32/include/asm/kprobes.h	2011-09-29 10:36:04.153804693 +0200
 @@ -16,6 +16,7 @@
  typedef u16	kprobe_opcode_t;
  #define BREAKPOINT_INSTRUCTION	0xd673	/* breakpoint */
@@ -838,9 +869,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/include/asm/kprobes.h linux-3.0.4-gh//ar
  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
  extern int kprobe_exceptions_notify(struct notifier_block *self,
  				    unsigned long val, void *data);
-diff -rupdN linux-3.0.4-org//arch/avr32/Kconfig linux-3.0.4-gh//arch/avr32/Kconfig
---- linux-3.0.4-org//arch/avr32/Kconfig	2011-08-29 22:56:30.000000000 +0200
-+++ linux-3.0.4-gh//arch/avr32/Kconfig	2011-09-29 10:36:04.154804693 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/Kconfig linux-3.0.8-gh//arch/avr32/Kconfig
+--- linux-3.0.8-org//arch/avr32/Kconfig	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.8-gh//arch/avr32/Kconfig	2011-09-29 10:36:04.154804693 +0200
 @@ -156,6 +156,15 @@ config BOARD_MERISC
  config BOARD_MIMC200
  	bool "MIMC200 CPU board"
@@ -865,9 +896,9 @@ diff -rupdN linux-3.0.4-org//arch/avr32/Kconfig linux-3.0.4-gh//arch/avr32/Kconf
  
  choice
  	prompt "Boot loader type"
-diff -rupdN linux-3.0.4-org//arch/avr32/Makefile linux-3.0.4-gh//arch/avr32/Makefile
---- linux-3.0.4-org//arch/avr32/Makefile	2011-08-29 22:56:30.000000000 +0200
-+++ linux-3.0.4-gh//arch/avr32/Makefile	2011-09-29 10:36:04.155804693 +0200
+diff -rupdN linux-3.0.8-org//arch/avr32/Makefile linux-3.0.8-gh//arch/avr32/Makefile
+--- linux-3.0.8-org//arch/avr32/Makefile	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.8-gh//arch/avr32/Makefile	2011-09-29 10:36:04.155804693 +0200
 @@ -37,6 +37,7 @@ core-$(CONFIG_BOARD_HAMMERHEAD)		+= arch
  core-$(CONFIG_BOARD_FAVR_32)		+= arch/avr32/boards/favr-32/
  core-$(CONFIG_BOARD_MERISC)		+= arch/avr32/boards/merisc/
