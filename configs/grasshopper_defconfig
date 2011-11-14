@@ -17,23 +17,23 @@ BR2_TARGET_ROOTFS_JFFS2_BE=y
 
 # Generic
 BR2_TARGET_GENERIC_HOSTNAME="grasshopper"
-BR2_TARGET_GENERIC_ISSUE="Grasshopper on Buildroot 2011.11-GIT"
+BR2_TARGET_GENERIC_ISSUE="Grasshopper on Buildroot 2011.11-RC1"
 
 # File System structure
-BR2_ROOTFS_DEVICE_TABLE="target/device/atmel/grasshopper/device_table.txt"
-BR2_ROOTFS_STATIC_DEVICE_TABLE="target/device/atmel/grasshopper/device_table_dev.txt"
+BR2_ROOTFS_DEVICE_TABLE="board/atmel/grasshopper/device_table.txt"
+BR2_ROOTFS_STATIC_DEVICE_TABLE="board/atmel/grasshopper/device_table_dev.txt"
 
 # Bootloader
 BR2_TARGET_UBOOT=y
 BR2_TARGET_UBOOT_BOARDNAME="grasshopper"
 BR2_TARGET_UBOOT_2010_09=y
-BR2_TARGET_UBOOT_CUSTOM_PATCH_DIR="target/device/atmel/grasshopper/u-boot"
+BR2_TARGET_UBOOT_CUSTOM_PATCH_DIR="board/atmel/grasshopper/u-boot"
 
 # Kernel
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="3.0.8"
-BR2_LINUX_KERNEL_PATCH="target/device/atmel/grasshopper/kernel-patches"
+BR2_LINUX_KERNEL_PATCH="board/atmel/grasshopper/kernel-patches"
 BR2_LINUX_KERNEL_USE_DEFCONFIG=y
 BR2_LINUX_KERNEL_DEFCONFIG="grasshopper"
 BR2_LINUX_KERNEL_INSTALL_TARGET=y
