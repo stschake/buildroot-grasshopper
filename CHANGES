@@ -1,8 +1,8 @@
-2011.11, Not released yet:
+2011.11-rc1, Released November 11th, 2011:
 
 	Fixes all over the tree and new features.
 
-	Move misc scripts and support stuff to support/. Rename
+	Moved misc scripts and support stuff to support/. Renamed
 	patch-kernel.sh to support/scripts/apply-patches.sh.
 
 	Documentation: Moved to asciidoc format, make targets to
@@ -59,8 +59,10 @@
 	Issues resolved (http://bugs.uclibc.org):
 
 	#505:  live555: new package
+	#507:  Enable live and tv options in MPlayer-1.0rc2
 	#531:  let e2fsprogs package to export headers to staging dir if needed
 	#1171: Linuxthreads new cannot find sysdep.h
+	#1357: Add bluez to buildroot system
 	#2107: New package: input-event-daemon
 	#2599: New package: orc (Oil Runtime Compiler)
 	#2605: gstreamer: Update to 0.10.30
@@ -72,6 +74,7 @@
 	#3343: Add file:// download SITE_METHOD
 	#3391: Add support for specifying an external kernel tree
 	#3631: Error while compiling with Xorg
+	#3709: oprofile doesn't build for mipsel
 	#3925: midori not getting compile
 	#4045: Add support for downloading i386 toolchains from codesourcery
 	#4165: lrzsz-fix-symlink-at-rebuild.patch
