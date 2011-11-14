@@ -18,6 +18,7 @@ if BR2_PACKAGE_RRDTOOL
 
 config BR2_PACKAGE_RRDTOOL_NOMMAP
 	bool "rrdtool (no mmap)"
+	depends on BR2_PACKAGE_RRDTOOL
 	default n
 	help
 	  This option disables the memory mapped file usage of the RRDTool.
