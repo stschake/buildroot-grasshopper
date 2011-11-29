@@ -24,12 +24,11 @@ gettext-source: $(DL_DIR)/$(GETTEXT_SOURCE)
 
 $(GETTEXT_DIR)/.unpacked: $(DL_DIR)/$(GETTEXT_SOURCE)
 	$(GETTEXT_CAT) $(DL_DIR)/$(GETTEXT_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(GETTEXT_DIR) package/gettext/ gettext\*.patch
-	$(CONFIG_UPDATE) $(@D)
-	$(CONFIG_UPDATE) $(GETTEXT_DIR)/build-aux
+	support/scripts/apply-patches.sh $(GETTEXT_DIR) package/gettext/ gettext\*.patch
+	$(call CONFIG_UPDATE,$(@D))
 	touch $@
 
-ifeq ($(BR2_TOOLCHAIN_EXTERNAL),y)
+ifneq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 IGNORE_EXTERNAL_GETTEXT:=--with-included-gettext
 endif
 
@@ -93,7 +92,7 @@ $(GETTEXT_DIR)/.configured: $(GETTEXT_DIR)/.unpacked
 		--disable-libasprintf \
 		--enable-shared \
 		$(IGNORE_EXTERNAL_GETTEXT) \
-		$(OPENMP) \
+		--disable-openmp \
 	)
 	touch $@
 
@@ -119,8 +118,8 @@ gettext: host-pkg-config $(if $(BR2_PACKAGE_LIBICONV),libiconv) $(STAGING_DIR)/$
 gettext-unpacked: $(GETTEXT_DIR)/.unpacked
 
 gettext-clean:
-	-$(MAKE) DESTDIR=$(STAGING_DIR) CC=$(TARGET_CC) -C $(GETTEXT_DIR) uninstall
-	-$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(GETTEXT_DIR) uninstall
+	-$(MAKE) DESTDIR=$(STAGING_DIR) CC="$(TARGET_CC)" -C $(GETTEXT_DIR) uninstall
+	-$(MAKE) DESTDIR=$(TARGET_DIR) CC="$(TARGET_CC)" -C $(GETTEXT_DIR) uninstall
 	-$(MAKE) -C $(GETTEXT_DIR) clean
 
 gettext-dirclean:
@@ -135,15 +134,6 @@ gettext-dirclean:
 gettext-target: $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GETTEXT_DIR) install
 	chmod +x $(TARGET_DIR)/usr/lib/libintl.so* # identify as needing to be stripped
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
-endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/man
-endif
-	rm -rf $(addprefix $(TARGET_DIR),/usr/share/doc \
-		/usr/doc /usr/share/aclocal /usr/include/libintl.h)
-	rmdir --ignore-fail-on-non-empty $(TARGET_DIR)/usr/include
 
 $(TARGET_DIR)/usr/lib/libintl.so: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
 	cp -dpf $(STAGING_DIR)/usr/lib/libgettext*.so* \

@@ -3,18 +3,15 @@
 # radvd
 #
 #############################################################
-RADVD_VERSION:=1.5
-RADVD_SOURCE:=radvd-$(RADVD_VERSION).tar.gz
-RADVD_SITE:=http://www.litech.org/radvd/dist/
-RADVD_AUTORECONF:=no
-RADVD_INSTALL_STAGING:=no
-RADVD_INSTALL_TARGET:=YES
-RADVD_DEPENDENCIES:=flex
-RADVD_MAKE:=$(MAKE1)
-RADVD_CONF_OPT:= --program-prefix=''
 
-$(eval $(call AUTOTARGETS,package,radvd))
+RADVD_VERSION = 1.8.3
+RADVD_SITE = http://www.litech.org/radvd/dist/
+RADVD_DEPENDENCIES = flex host-flex
 
-$(RADVD_HOOK_POST_INSTALL): $(RADVD_TARGET_INSTALL_TARGET)
+define RADVD_INSTALL_INITSCRIPT
 	$(INSTALL) -m 0755 package/radvd/S50radvd $(TARGET_DIR)/etc/init.d
-	touch $@
+endef
+
+RADVD_POST_INSTALL_TARGET_HOOKS += RADVD_INSTALL_INITSCRIPT
+
+$(eval $(call AUTOTARGETS))

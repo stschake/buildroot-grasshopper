@@ -8,7 +8,7 @@ CUPS_NAME = cups-$(CUPS_VERSION)
 CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
 CUPS_SITE = http://ftp.easysw.com/pub/cups/$(CUPS_VERSION)
 CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
-CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
+CUPS_DESTDIR = $(STAGING_DIR)/usr/lib
 CUPS_CAT:=$(BZCAT)
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
@@ -69,8 +69,8 @@ $(DL_DIR)/$(CUPS_SOURCE):
 
 $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 	$(CUPS_CAT) $(DL_DIR)/$(CUPS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(CUPS_DIR) package/cups/ \*.patch
-	$(CONFIG_UPDATE) $(CUPS_DIR)
+	support/scripts/apply-patches.sh $(CUPS_DIR) package/cups/ \*.patch
+	$(call CONFIG_UPDATE,$(CUPS_DIR))
 	touch $@
 
 $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked

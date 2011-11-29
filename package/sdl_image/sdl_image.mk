@@ -6,7 +6,6 @@
 SDL_IMAGE_VERSION:=1.2.6
 SDL_IMAGE_SOURCE:=SDL_image-$(SDL_IMAGE_VERSION).tar.gz
 SDL_IMAGE_SITE:=http://www.libsdl.org/projects/SDL_image/release
-SDL_IMAGE_LIBTOOL_PATCH:=NO
 SDL_IMAGE_INSTALL_STAGING:=YES
 SDL_IMAGE_INSTALL_TARGET:=YES
 
@@ -35,4 +34,4 @@ SDL_IMAGE_DEPENDENCIES:=sdl \
 	$(if $(BR2_PACKAGE_SDL_IMAGE_PNG),libpng) \
 	$(if $(BR2_PACKAGE_SDL_IMAGE_TIFF),tiff)
 
-$(eval $(call AUTOTARGETS,package,sdl_image))
+$(eval $(call AUTOTARGETS))

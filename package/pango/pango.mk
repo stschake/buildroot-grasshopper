@@ -3,9 +3,12 @@
 # pango
 #
 #############################################################
-PANGO_VERSION = 1.20.5
+PANGO_VERSION_MAJOR = 1.28
+PANGO_VERSION_MINOR = 4
+PANGO_VERSION = $(PANGO_VERSION_MAJOR).$(PANGO_VERSION_MINOR)
+
 PANGO_SOURCE = pango-$(PANGO_VERSION).tar.bz2
-PANGO_SITE = http://ftp.gnome.org/pub/GNOME/sources/pango/1.20
+PANGO_SITE = http://ftp.gnome.org/pub/GNOME/sources/pango/$(PANGO_VERSION_MAJOR)
 PANGO_AUTORECONF = YES
 PANGO_INSTALL_STAGING = YES
 PANGO_INSTALL_TARGET = YES
@@ -37,19 +40,9 @@ PANGO_CONF_ENV = ac_cv_func_posix_getpwuid_r=yes glib_cv_stack_grows=no \
 		ac_use_included_regex=no gl_cv_c_restrict=no \
 		ac_cv_path_FREETYPE_CONFIG=$(STAGING_DIR)/usr/bin/freetype-config
 
-PANGO_CONF_OPT = --enable-shared --enable-static \
-		--enable-explicit-deps=no --disable-debug
+PANGO_CONF_OPT = --enable-explicit-deps=no --disable-debug
 
-HOST_PANGO_CONF_OPT = \
-		--disable-static \
-		$(if $(BR2_PACKAGE_XORG7),--with-x,--without-x) \
-		--disable-debug \
-
-PANGO_DEPENDENCIES = gettext libintl host-pkg-config host-pango libglib2 cairo
-
-HOST_PANGO_DEPENDENCIES = host-pkg-config host-cairo host-libglib2 host-autoconf host-automake
-
-HOST_PANGO_AUTORECONF = YES
+PANGO_DEPENDENCIES = $(if $(BR2_NEEDS_GETTEXT_IF_LOCALE),gettext libintl) host-pkg-config libglib2 cairo
 
 ifeq ($(BR2_PACKAGE_XORG7),y)
         PANGO_CONF_OPT += --with-x \
@@ -60,13 +53,11 @@ else
         PANGO_CONF_OPT += --without-x
 endif
 
-$(eval $(call AUTOTARGETS,package,pango))
-$(eval $(call AUTOTARGETS,package,pango,host))
+define PANGO_INSTALL_INITSCRIPT
+	$(INSTALL) -m 755 -D package/pango/S25pango \
+		$(TARGET_DIR)/etc/init.d/S25pango
+endef
 
-$(PANGO_HOOK_POST_INSTALL):
-	mkdir -p $(TARGET_DIR)/etc/pango
-	$(PANGO_HOST_BINARY) > $(TARGET_DIR)/etc/pango/pango.modules
-	$(SED) 's~$(HOST_DIR)~~g' $(TARGET_DIR)/etc/pango/pango.modules
-	touch $@
+PANGO_POST_INSTALL_TARGET_HOOKS += PANGO_INSTALL_INITSCRIPT
 
-PANGO_HOST_BINARY:=$(HOST_DIR)/usr/bin/pango-querymodules
+$(eval $(call AUTOTARGETS))

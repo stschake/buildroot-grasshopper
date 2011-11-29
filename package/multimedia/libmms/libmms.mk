@@ -3,15 +3,14 @@
 # libmms
 #
 #############################################################
-LIBMMS_VERSION = 0.4
+LIBMMS_VERSION = 0.6
 LIBMMS_SOURCE = libmms-$(LIBMMS_VERSION).tar.gz
-LIBMMS_SITE = http://launchpad.net/libmms/trunk/$(LIBMMS_VERSION)/+download
+LIBMMS_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/libmms
 
 LIBMMS_AUTORECONF = NO
-LIBMMS_LIBTOOL_PATCH = NO
 LIBMMS_INSTALL_STAGING = YES
 LIBMMS_INSTALL_TARGET = YES
 
 LIBMMS_DEPENDENCIES = host-pkg-config libglib2
 
-$(eval $(call AUTOTARGETS,package/multimedia,libmms))
+$(eval $(call AUTOTARGETS))

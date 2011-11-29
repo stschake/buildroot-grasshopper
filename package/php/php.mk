@@ -4,21 +4,21 @@
 #
 #############################################################
 
-PHP_VERSION = 5.2.11
+PHP_VERSION = 5.2.17
 PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_SITE = http://www.php.net/distributions
 PHP_INSTALL_STAGING = YES
 PHP_INSTALL_STAGING_OPT = INSTALL_ROOT=$(STAGING_DIR) install
 PHP_INSTALL_TARGET_OPT = INSTALL_ROOT=$(TARGET_DIR) install
 PHP_LIBTOOL_PATCH = NO
-PHP_DEPENDENCIES =
-PHP_CONF_OPT =	$(DISABLE_IPV6) \
-		--mandir=/usr/share/man \
+PHP_CONF_OPT =  --mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--disable-all \
 		--without-pear \
 		--with-config-file-path=/etc \
 		--localstatedir=/var \
+
+PHP_CFLAGS = $(TARGET_CFLAGS)
 
 ifneq ($(BR2_PACKAGE_PHP_CLI),y)
 	PHP_CONF_OPT += --disable-cli
@@ -85,12 +85,12 @@ endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_GETTEXT),y)
 	PHP_CONF_OPT += --with-gettext=$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += gettext
+	PHP_DEPENDENCIES += $(if $(BR2_NEEDS_GETTEXT),gettext)
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_GMP),y)
 	PHP_CONF_OPT += --with-gmp=$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += libgmp
+	PHP_DEPENDENCIES += gmp
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_JSON),y)
@@ -105,6 +105,10 @@ endif
 ifeq ($(BR2_PACKAGE_PHP_EXT_NCURSES),y)
 	PHP_CONF_OPT += --with-ncurses=$(STAGING_DIR)/usr
 	PHP_DEPENDENCIES += ncurses
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_PCNTL),y)
+	PHP_CONF_OPT += --enable-pcntl
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVMSG),y)
@@ -139,7 +143,7 @@ endif
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
 	PHP_CONF_OPT += --with-sqlite
 ifneq ($(BR2_LARGEFILE),y)
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_DISABLE_LFS"
+	PHP_CFLAGS += -DSQLITE_DISABLE_LFS
 endif
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE_UTF8),y)
 	PHP_CONF_OPT += --enable-sqlite-utf8
@@ -152,12 +156,13 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PDO),y)
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
 	PHP_CONF_OPT += --with-pdo-sqlite=$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += sqlite
 else
 	PHP_CONF_OPT += --with-pdo-sqlite
 endif
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION"
+	PHP_CFLAGS += -DSQLITE_OMIT_LOAD_EXTENSION
 ifneq ($(BR2_LARGEFILE),y)
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_DISABLE_LFS"
+	PHP_CFLAGS += -DSQLITE_DISABLE_LFS
 endif
 endif
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
@@ -166,23 +171,28 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
 endif
 endif
 
-$(eval $(call AUTOTARGETS,package,php))
-
-$(PHP_HOOK_POST_INSTALL):
+define PHP_INSTALL_FIXUP
 	rm -rf $(TARGET_DIR)/usr/lib/php
 	rm -f $(TARGET_DIR)/usr/bin/phpize
 	rm -f $(TARGET_DIR)/usr/bin/php-config
 	if [ ! -f $(TARGET_DIR)/etc/php.ini ]; then \
 		$(INSTALL) -m 0755 $(BR2_PACKAGE_PHP_CONFIG) $(TARGET_DIR)/etc/php.ini; fi
-	touch $@
+endef
 
-$(PHP_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
+PHP_POST_INSTALL_TARGET_HOOKS += PHP_INSTALL_FIXUP
+
+define PHP_UNINSTALL_STAGING_CMDS
 	rm -rf $(STAGING_DIR)/usr/include/php
 	rm -rf $(STAGING_DIR)/usr/lib/php
 	rm -f $(STAGING_DIR)/usr/bin/php*
 	rm -f $(STAGING_DIR)/usr/share/man/man1/php*.1
+endef
+
+define PHP_UNINSTALL_TARGET_CMDS
 	rm -f $(TARGET_DIR)/etc/php.ini
 	rm -f $(TARGET_DIR)/usr/bin/php*
-	rm -f $(PHP_TARGET_INSTALL_TARGET) $(PHP_HOOK_POST_INSTALL)
+endef
 
+PHP_CONF_ENV += CFLAGS="$(PHP_CFLAGS)"
+
+$(eval $(call AUTOTARGETS))

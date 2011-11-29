@@ -14,12 +14,7 @@ $(ELF2FLT_DIR)/.unpacked:
 	touch $@
 
 $(ELF2FLT_DIR)/.patched: $(ELF2FLT_DIR)/.unpacked
-ifeq ($(strip $(ARCH)),nios2)
-	$(SED) "s,STAGING_DIR,$(STAGING_DIR),g;" toolchain/elf2flt/elf2flt.nios2.conditional
-	$(SED) "s,CROSS_COMPILE_PREFIX,$(REAL_GNU_TARGET_NAME),g;" toolchain/elf2flt/elf2flt.nios2.conditional
-	toolchain/patch-kernel.sh $(ELF2FLT_DIR) toolchain/elf2flt elf2flt.nios2.conditional
-endif
-	$(CONFIG_UPDATE) $(@D)
+	$(call CONFIG_UPDATE,$(@D))
 	touch $@
 
 $(ELF2FLT_DIR)/.configured: $(ELF2FLT_DIR)/.patched

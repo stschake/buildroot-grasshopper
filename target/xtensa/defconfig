@@ -19,7 +19,6 @@ BR2_WGET="wget --passive-ftp"
 # BR2_STRIP_none=y
 
 ## Added by Maxim
-BR2_UPDATE_CONFIG=y
 
 #
 # Kernel Header Options
@@ -78,11 +77,9 @@ BR2_GDB_VERSION="6.8"
 #
 # BR2_PACKAGE_SSTRIP_TARGET is not set
 # BR2_PACKAGE_SSTRIP_HOST is not set
-# BR2_ENABLE_MULTILIB is not set
 BR2_LARGEFILE=y
 BR2_INET_RPC=y
 BR2_TARGET_OPTIMIZATION="-Os -pipe"
-BR2_CROSS_TOOLCHAIN_TARGET_UTILS=y
 
 
 ## Added by Maxim
@@ -94,7 +91,6 @@ BR2_TOOLCHAIN_BUILDROOT=y
 #
 # Other development stuff
 #
-BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_LIBINTL is not set
 #  For NFS mount:
 BR2_PACKAGE_PORTMAP=y
@@ -106,6 +102,7 @@ BR2_PACKAGE_PORTMAP=y
 #
 # filesystem for target device
 #
+BR2_ROOTFS_DEVICE_TABLE="target/device/xtensa/device_table.txt"
 BR2_TARGET_ROOTFS_CPIO=y
 BR2_TARGET_ROOTFS_CPIO_GZIP=y
 BR2_TARGET_ROOTFS_INITRAMFS=y

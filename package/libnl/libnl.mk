@@ -4,19 +4,16 @@
 #
 #############################################################
 
-LIBNL_VERSION = 1.1
+LIBNL_VERSION = 3.0
 LIBNL_SOURCE = libnl-$(LIBNL_VERSION).tar.gz
-LIBNL_SITE = http://distfiles.gentoo.org/distfiles
+LIBNL_SITE = http://www.infradead.org/~tgr/libnl/files/
 LIBNL_INSTALL_STAGING = YES
-LIBNL_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+LIBNL_DEPENDENCIES = host-bison
+LIBNL_MAKE = $(MAKE1)
 
-$(eval $(call AUTOTARGETS,package,libnl))
+define LIBNL_UNINSTALL_TARGET_CMDS
+	rm -r $(TARGET_DIR)/usr/lib/libnl.* $(TARGET_DIR)/usr/lib/libnl-*.*
+	rm -rf $(TARGET_DIR)/usr/lib/libnl
+endef
 
-$(LIBNL_HOOK_POST_INSTALL): $(LIBNL_TARGET_INSTALL_TARGET)
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libnl.so*
-	touch $@
-
-$(LIBNL_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
-	rm -f $(TARGET_DIR)/usr/lib/libnl.so*
-	rm -f $(LIBNL_TARGET_INSTALL_TARGET) $(LIBNL_HOOK_POST_INSTALL)
+$(eval $(call AUTOTARGETS))

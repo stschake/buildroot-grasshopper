@@ -67,13 +67,17 @@ config BR2_PACKAGE_PHP_EXT_FTP
 
 config BR2_PACKAGE_PHP_EXT_GETTEXT
 	bool "gettext"
-	select BR2_PACKAGE_GETTEXT
+	select BR2_PACKAGE_GETTEXT if BR2_NEEDS_GETTEXT
+	depends on BR2_USE_WCHAR
 	help
 	  gettext support
 
+comment "gettext support requires a toolchain with WCHAR support"
+	depends on !BR2_USE_WCHAR
+
 config BR2_PACKAGE_PHP_EXT_GMP
 	bool "gmp"
-	select BR2_PACKAGE_LIBGMP
+	select BR2_PACKAGE_GMP
 	help
 	  GMP support
 
@@ -99,6 +103,11 @@ config BR2_PACKAGE_PHP_EXT_PCRE
 	help
 	  Perl Compatible Regular Expressions support
 
+config BR2_PACKAGE_PHP_EXT_PCNTL
+	bool "PCNTL"
+	help
+	  Process Control Support
+
 config BR2_PACKAGE_PHP_EXT_SYSVMSG
 	bool "sysvmsg - System V Message queue"
 	help
@@ -121,6 +130,7 @@ config BR2_PACKAGE_PHP_EXT_ZIP
 
 config BR2_PACKAGE_PHP_EXT_FILTER
 	bool "filter"
+	select BR2_PACKAGE_PHP_EXT_PCRE
 	help
 	  Input filter support
 
@@ -163,8 +173,12 @@ config BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL
 config BR2_PACKAGE_PHP_EXT_PDO_MYSQL
 	bool "PDO_MySQL"
 	depends on BR2_PACKAGE_PHP_EXT_PDO
+	depends on BR2_INSTALL_LIBSTDCPP
 	select BR2_PACKAGE_MYSQL_CLIENT
 	help
 	  PDO driver for MySQL
+
+comment "PDO_MySQL requires a toolchain with C++ support"
+	depends on !BR2_INSTALL_LIBSTDCPP && BR2_PACKAGE_PHP_EXT_PDO
 
 endmenu

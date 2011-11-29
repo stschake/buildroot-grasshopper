@@ -14,3 +14,8 @@ config BR2_PACKAGE_PPPD_FILTER
 	  the pppd active-filter and pass-filter options
 	  are available.
 
+config BR2_PACKAGE_PPPD_RADIUS
+	depends on BR2_PACKAGE_PPPD
+	bool "radius"
+	help
+	  Install RADIUS support for pppd

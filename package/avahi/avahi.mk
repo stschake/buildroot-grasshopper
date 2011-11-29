@@ -10,7 +10,7 @@
 # either version 2.1 of the License, or (at your option) any
 # later version.
 
-AVAHI_VERSION = 0.6.23
+AVAHI_VERSION = 0.6.30
 AVAHI_SOURCE = avahi-$(AVAHI_VERSION).tar.gz
 AVAHI_SITE = http://www.avahi.org/download/
 AVAHI_INSTALL_STAGING = YES
@@ -63,7 +63,8 @@ AVAHI_CONF_ENV = ac_cv_func_strtod=yes \
 		ac_cv_func_working_mktime=yes \
 		jm_cv_func_working_re_compile_pattern=yes \
 		ac_use_included_regex=no \
-		avahi_cv_sys_cxx_works=yes
+		avahi_cv_sys_cxx_works=yes \
+		DATADIRNAME=share
 
 AVAHI_CONF_OPT = --localstatedir=/var \
 		--disable-qt3 \
@@ -71,18 +72,19 @@ AVAHI_CONF_OPT = --localstatedir=/var \
 		--disable-gdbm \
 		--disable-python-dbus \
 		--disable-pygtk \
+		--disable-gtk3 \
 		--disable-mono \
 		--disable-monodoc \
 		--disable-stack-protector \
 		--with-distro=none \
-		$(if $(BR2_HAVE_MANPAGES),--enable,--disable)-manpages \
+		$(if $(BR2_HAVE_DOCUMENTATION),--enable,--disable)-manpages \
 		$(if $(BR2_PACKAGE_AVAHI_AUTOIPD),--enable,--disable)-autoipd \
 		--with-avahi-user=default \
 		--with-avahi-group=default \
 		--with-autoipd-user=default \
 		--with-autoipd-group=default
 
-AVAHI_DEPENDENCIES = $(if $(BR2_PACKAGE_GETTEXT),gettext)
+AVAHI_DEPENDENCIES = $(if $(BR2_NEEDS_GETTEXT_IF_LOCALE),gettext libintl) host-intltool host-pkg-config
 
 ifneq ($(BR2_PACKAGE_AVAHI_DAEMON)$(BR2_PACKAGE_AVAHI_AUTOIPD),)
 AVAHI_DEPENDENCIES += libdaemon
@@ -124,7 +126,7 @@ AVAHI_CONF_ENV += am_cv_pathless_PYTHON=python \
 		am_cv_python_pyexecdir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
 		py_cv_mod_socket_=yes
 
-AVAHI_DEPENDENCIES += libpython
+AVAHI_DEPENDENCIES += python
 AVAHI_CONF_OPT += --enable-python
 else
 AVAHI_CONF_OPT += --disable-python
@@ -135,18 +137,31 @@ AVAHI_DEPENDENCIES += libintl
 AVAHI_MAKE_OPT = LIBS=-lintl
 endif
 
-$(eval $(call AUTOTARGETS,package,avahi))
-
-$(AVAHI_HOOK_POST_INSTALL):
+define AVAHI_REMOVE_INITSCRIPT
 	rm -rf $(TARGET_DIR)/etc/init.d/avahi-*
-ifeq ($(BR2_PACKAGE_AVAHI_AUTOIPD),y)
+endef
+
+AVAHI_POST_INSTALL_TARGET_HOOKS += AVAHI_REMOVE_INITSCRIPT
+
+define AVAHI_INSTALL_AUTOIPD
 	rm -rf $(TARGET_DIR)/etc/dhcp3/
 	$(INSTALL) -D -m 0755 package/avahi/busybox-udhcpc-default.script $(TARGET_DIR)/usr/share/udhcpc/default.script
 	$(INSTALL) -m 0755 package/avahi/S05avahi-setup.sh $(TARGET_DIR)/etc/init.d/
 	rm -f $(TARGET_DIR)/var/lib/avahi-autoipd
+	$(INSTALL) -d -m 0755 $(TARGET_DIR)/var/lib
 	ln -sf /tmp/avahi-autoipd $(TARGET_DIR)/var/lib/avahi-autoipd
+endef
+
+ifeq ($(BR2_PACKAGE_AVAHI_AUTOIPD),y)
+AVAHI_POST_INSTALL_TARGET_HOOKS += AVAHI_INSTALL_AUTOIPD
 endif
-ifeq ($(BR2_PACKAGE_AVAHI_DAEMON),y)
+
+define AVAHI_INSTALL_DAEMON_INITSCRIPT
 	$(INSTALL) -m 0755 package/avahi/S50avahi-daemon $(TARGET_DIR)/etc/init.d/
+endef
+
+ifeq ($(BR2_PACKAGE_AVAHI_DAEMON),y)
+AVAHI_POST_INSTALL_TARGET_HOOKS += AVAHI_INSTALL_DAEMON_INITSCRIPT
 endif
-	touch $@
+
+$(eval $(call AUTOTARGETS))

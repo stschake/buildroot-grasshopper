@@ -10,9 +10,9 @@ RUBIX_INSTALL_STAGING = NO
 RUBIX_INSTALL_TARGET = YES
 RUBIX_INSTALL_TARGET_OPT = GAMESDIR=$(TARGET_DIR)/usr/games install
 
-RUBIX_MAKE_OPT = CC=$(TARGET_CC) XINC="-I$(STAGING_DIR)/usr/include/X11" XLIB="-L$(STAGING_DIR)/usr/lib -lX11"
+RUBIX_MAKE_OPT = CC="$(TARGET_CC)" XINC="-I$(STAGING_DIR)/usr/include/X11" XLIB="-L$(STAGING_DIR)/usr/lib -lX11"
 
 RUBIX_DEPENDENCIES = xserver_xorg-server
 
-$(eval $(call AUTOTARGETS,package/games,rubix))
+$(eval $(call AUTOTARGETS))
 

@@ -1,0 +1,909 @@
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/button.c linux-3.0.9-gh//arch/avr32/boards/grasshopper/button.c
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/button.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/button.c	2011-10-22 10:22:18.582767288 +0200
+@@ -0,0 +1,55 @@
++/*
++ * init code specific for grasshoppers Buttons
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/gpio.h>
++#include <linux/gpio_keys.h>
++#include <linux/init.h>
++#include <linux/input.h>
++#include <linux/platform_device.h>
++
++#include <mach/at32ap700x.h>
++#include <mach/board.h>
++#include <mach/init.h>
++#include <mach/portmux.h>
++
++static struct gpio_keys_button grasshopper_buttons_btn[] = {
++    {
++        .gpio = GPIO_PIN_PA(31),
++        .code = BTN_0,
++        .desc = "Button 0",
++        .active_low = 1,
++        .type = EV_KEY,
++    },
++};
++
++static struct gpio_keys_platform_data grasshopper_buttons_data = {
++    .buttons = grasshopper_buttons_btn,
++    .nbuttons = 1,
++};
++
++static struct platform_device grasshopper_buttons = {
++    .name = "gpio-keys",
++    .id = -1,
++    .num_resources = 0,
++    .dev = {
++        .platform_data = &grasshopper_buttons_data,
++    },
++};
++
++static int __init grasshopper_init_buttons(void)
++{
++    int i;
++    
++    for (i=0; i<grasshopper_buttons_data.nbuttons;i++) {
++        at32_select_gpio(grasshopper_buttons_btn[i].gpio, AT32_GPIOF_DEGLITCH);
++    }
++    
++    platform_device_register(&grasshopper_buttons);
++    return 0;
++}
++arch_initcall(grasshopper_init_buttons);
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/flash.c linux-3.0.9-gh//arch/avr32/boards/grasshopper/flash.c
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/flash.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/flash.c	2011-09-29 10:36:04.148804693 +0200
+@@ -0,0 +1,101 @@
++/*
++ * GRASSHOPPER board-specific flash initialization
++ *
++ * Copyright (C) 2005-2006 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
++
++#include <mach/smc.h>
++
++static struct smc_timing flash_timing __initdata = {
++	.ncs_read_setup		= 0,
++	.nrd_setup		= 40,
++	.ncs_write_setup	= 0,
++	.nwe_setup		= 10,
++
++	.ncs_read_pulse		= 80,
++	.nrd_pulse		= 40,
++	.ncs_write_pulse	= 65,
++	.nwe_pulse		= 55,
++
++	.read_cycle		= 120,
++	.write_cycle		= 120,
++};
++
++static struct smc_config flash_config __initdata = {
++	.bus_width		= 2,
++	.nrd_controlled		= 1,
++	.nwe_controlled		= 1,
++	.byte_write		= 1,
++};
++
++// To prevent trouble when flashing with Linux, take care that the same values for offsets
++// and lengths are set here and in the file 
++// 'buildroot_basedir/project_build_avr32/grasshopper/u-boot-1.3.4/include/configs/grasshopper.h' !!!
++static struct mtd_partition flash_parts[] = {
++	{
++		.name           = "u-boot",
++		.offset         = 0x00000000,
++		.size           = 0x00020000,           /* 128 KiB */
++		.mask_flags     = MTD_WRITEABLE,
++	},
++	{
++		.name           = "env",		/* 64 KB */
++		.offset         = 0x00020000,
++		.size           = 0x00010000,
++		.mask_flags     = MTD_WRITEABLE,
++	},
++	{
++		.name           = "root",
++		.offset         = 0x00030000,
++		.size           = 0x007d0000,
++	},
++};
++
++static struct physmap_flash_data flash_data = {
++	.width		= 2,
++	.nr_parts	= ARRAY_SIZE(flash_parts),
++	.parts		= flash_parts,
++};
++
++static struct resource flash_resource = {
++	.start		= 0x00000000,
++	.end		= 0x007fffff,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device flash_device = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.resource	= &flash_resource,
++	.num_resources	= 1,
++	.dev		= {
++		.platform_data = &flash_data,
++	},
++};
++
++/* This needs to be called after the SMC has been initialized */
++static int __init grasshopper_flash_init(void)
++{
++	int ret;
++
++	smc_set_timing(&flash_config, &flash_timing);
++	ret = smc_set_configuration(0, &flash_config);
++	if (ret < 0) {
++		printk(KERN_ERR "grasshopper: failed to set NOR flash timing\n");
++		return ret;
++	}
++
++	platform_device_register(&flash_device);
++
++	return 0;
++}
++device_initcall(grasshopper_flash_init);
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/Kconfig linux-3.0.9-gh//arch/avr32/boards/grasshopper/Kconfig
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/Kconfig	2011-09-29 10:36:04.148804693 +0200
+@@ -0,0 +1,5 @@
++# Grasshopper customization
++
++if BOARD_GRASSHOPPER
++
++endif	# BOARD_GRASSHOPPER
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/led.c linux-3.0.9-gh//arch/avr32/boards/grasshopper/led.c
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/led.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/led.c	2011-10-22 00:54:33.765592177 +0200
+@@ -0,0 +1,155 @@
++/*
++ * init code specific for grasshoppers LEDs
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/gpio.h>
++#include <linux/init.h>
++#include <linux/leds.h>
++#include <linux/platform_device.h>
++
++#include <mach/at32ap700x.h>
++#include <mach/board.h>
++#include <mach/gpio.h>
++#include <mach/init.h>
++#include <mach/portmux.h>
++ 
++ // LEDs
++static struct gpio_led grasshopper_led[] = {
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM0
++    {
++        .name = "pwrled:red",
++        .gpio = GPIO_PIN_PA(22),
++        .active_low = 1,
++    },
++#endif
++    {
++        .name = "led1:green",
++        .gpio = GPIO_PIN_PA(23),
++        .default_trigger = "heartbeat",
++    },
++    {
++        .name = "led2:green",
++        .gpio = GPIO_PIN_PA(24),
++    },
++    {
++        .name = "led3:green",
++        .gpio = GPIO_PIN_PA(25),
++    },
++    {
++        .name = "led4:green",
++        .gpio = GPIO_PIN_PA(26),
++    },
++    {
++        .name = "led5:green",
++        .gpio = GPIO_PIN_PA(27),
++    },
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM0
++    {
++        .name = "led6:green",
++        .gpio = GPIO_PIN_PA(28),
++    },
++#endif
++#ifndef CONFIG_BOARD_GRASSHOPPER_PWM1
++    {
++        .name = "led7:green",
++        .gpio = GPIO_PIN_PA(29),
++    },
++#endif
++    {
++        .name = "led8:green",
++        .gpio = GPIO_PIN_PA(30),
++    },
++};
++
++static struct gpio_led_platform_data grasshopper_led_data = {
++    .num_leds = ARRAY_SIZE(grasshopper_led),
++    .leds = grasshopper_led,
++};
++
++static struct platform_device grasshopper_led_dev = {
++    .name = "leds-gpio",
++    .dev = {
++        .platform_data = &grasshopper_led_data,
++    },
++};
++
++/* PWM */
++#ifdef CONFIG_LEDS_ATMEL_PWM
++static struct gpio_led pwm_led[] = {
++    /* here the "gpio" is actually a PWM channel */
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM0
++    {
++        .name = "pwm0",
++        .gpio = 0,
++    },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM1
++    {
++        .name = "pwm1",
++        .gpio = 1,
++    },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM2
++    {
++        .name = "pwm2",
++        .gpio = 2,
++    },
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM3
++    {
++        .name = "pwm3",
++        .gpio = 3,
++    },
++#endif
++};
++
++static struct gpio_led_platform_data pwm_led_data = {
++    .num_leds = ARRAY_SIZE(pwm_led),
++    .leds = pwm_led,
++};
++
++static struct platform_device pwm_led_dev = {
++    .name = "leds-atmel-pwm",
++    .id = -1,
++    .dev = {
++        .platform_data = &pwm_led_data,
++    },
++};
++#endif
++
++static int __init grasshopper_setup_leds(void)
++{
++    printk("Grasshopper: Setting up %d LEDs\n", grasshopper_led_data.num_leds);
++    //for (i=0; i<grasshopper_led_data.num_leds; i++)
++    //    at32_select_gpio(grasshopper_led[i].gpio, AT32_GPIOF_OUTPUT);
++
++    platform_device_register(&grasshopper_led_dev);
++
++#ifdef CONFIG_LEDS_ATMEL_PWM
++    at32_add_device_pwm(0
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM0
++        | (1 << 0)
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM1
++        | (1 << 1)
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM2
++        | (1 << 2)
++#endif
++#ifdef CONFIG_BOARD_GRASSHOPPER_PWM3
++        | (1 << 3)
++#endif
++    );
++
++    printk("Grasshopper: Setting up %d PWMs\n", pwm_led_data.num_leds);
++    platform_device_register(&pwm_led_dev);
++#endif
++
++    return 0;
++}
++
++arch_initcall(grasshopper_setup_leds);
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/mac.c linux-3.0.9-gh//arch/avr32/boards/grasshopper/mac.c
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/mac.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/mac.c	2011-10-23 01:19:59.972470681 +0200
+@@ -0,0 +1,94 @@
++/*
++ * Init Code for the ethernet interface of the Grasshopper board.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/clk.h>
++#include <linux/etherdevice.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++
++#include <asm/setup.h>
++
++#include <mach/board.h>
++ 
++/* Initialized by bootloader-specific startup code. */
++struct tag *bootloader_tags __initdata;
++
++/* Ethernet */
++struct eth_addr {
++    u8 addr[6];
++};
++
++static struct eth_addr __initdata hw_addr[1];
++static struct eth_platform_data __initdata eth_data[] = {
++    {
++        .phy_mask   = ~(1U << 0),
++    },
++};
++
++/*
++ * The next two functions should go away as the boot loader is
++ * supposed to initialize the macb address registers with a valid
++ * ethernet address. But we need to keep it around for a while until
++ * we can be reasonably sure the boot loader does this.
++ *
++ * The phy_id is ignored as the driver will probe for it.
++ */
++static int __init parse_tag_ethernet(struct tag *tag)
++{
++    int i;
++
++    i = tag->u.ethernet.mac_index;
++    if (i < ARRAY_SIZE(hw_addr))
++        memcpy(hw_addr[i].addr, tag->u.ethernet.hw_address,
++                sizeof(hw_addr[i].addr));
++
++    return 0;
++}
++__tagtable(ATAG_ETHERNET, parse_tag_ethernet);
++
++static void __init set_hw_addr(struct platform_device *pdev)
++{
++    struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++    const u8 *addr;
++    void __iomem *regs;
++    struct clk *pclk;
++
++    if (!res)
++        return;
++    if (pdev->id >= ARRAY_SIZE(hw_addr))
++        return;
++
++    addr = hw_addr[pdev->id].addr;
++    if (!is_valid_ether_addr(addr))
++        return;
++
++    /*
++    * Since this is board-specific code, we'll cheat and use the
++    * physical address directly as we happen to know that it's
++    * the same as the virtual address.
++    */
++    regs = (void __iomem __force *)res->start;
++    pclk = clk_get(&pdev->dev, "pclk");
++    if (!pclk)
++        return;
++
++    clk_enable(pclk);
++    __raw_writel((addr[3] << 24) | (addr[2] << 16)
++            | (addr[1] << 8) | addr[0], regs + 0x98);
++    __raw_writel((addr[5] << 8) | addr[4], regs + 0x9c);
++    clk_disable(pclk);
++    clk_put(pclk);
++}
++
++static int __init grasshopper_init_mac(void)
++{
++    printk("Grasshopper: Setting up Ethernet\n");
++    set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
++    
++    return 0;
++}
++arch_initcall(grasshopper_init_mac);
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/Makefile linux-3.0.9-gh//arch/avr32/boards/grasshopper/Makefile
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/Makefile	2011-10-23 00:58:45.920426731 +0200
+@@ -0,0 +1,5 @@
++obj-y	+= button.o
++obj-y	+= flash.o
++obj-y	+= led.o
++obj-y	+= mac.o
++obj-y	+= setup.o
+diff -rupdN linux-3.0.9-org//arch/avr32/boards/grasshopper/setup.c linux-3.0.9-gh//arch/avr32/boards/grasshopper/setup.c
+--- linux-3.0.9-org//arch/avr32/boards/grasshopper/setup.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/boards/grasshopper/setup.c	2011-10-23 00:59:44.112428739 +0200
+@@ -0,0 +1,210 @@
++/*
++ * init code specific for grasshopper
++ *
++ * based on icnova_base.c from in-circuit.de
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/clk.h>
++#include <linux/gpio.h>
++#include <linux/irq.h>
++#include <linux/i2c.h>
++#include <linux/i2c-gpio.h>
++#include <linux/init.h>
++#include <linux/linkage.h>
++#include <linux/platform_device.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/ads7846.h>
++#include <linux/spi/at73c213.h>
++#include <linux/input.h>
++#include <linux/gpio_keys.h>
++
++#include <linux/fb.h>
++#include <video/atmel_lcdc.h>
++
++#include <linux/atmel-mci.h>
++#include <asm/io.h>
++#include <asm/setup.h>
++
++#include <mach/at32ap700x.h>
++#include <mach/board.h>
++#include <mach/init.h>
++#include <mach/portmux.h>
++
++#define PIN_TS_EXTINT GPIO_PIN_PA(19)
++
++static struct at73c213_board_info at73c213_data = {
++    .ssc_id = 0,
++    .shortname = "AT73C213 Sound",
++};
++
++static int ads7846_pendown_state(void)
++{
++    // active low!
++    return !gpio_get_value(PIN_TS_EXTINT);
++}
++
++static struct ads7846_platform_data ads_info = {
++    .model = 7846,
++    .vref_delay_usecs = 100,
++    .settle_delay_usecs = 800,
++    .penirq_recheck_delay_usecs = 800,
++    .x_plate_ohms = 750, /* FIXME */
++    .y_plate_ohms = 300, /* FIXME */
++    .pressure_max = 4096,
++    .debounce_max = 1,
++    .debounce_rep = 0,
++    .debounce_tol = (~0),
++    .get_pendown_state = ads7846_pendown_state,
++};
++
++static struct spi_board_info spi0_board_info[] __initdata = {
++    {
++        .modalias = "at73c213",
++        .max_speed_hz = 200000,
++        .chip_select = 1,
++        .mode = SPI_MODE_1,
++        .platform_data = &at73c213_data,
++    },
++    {
++        .modalias = "ads7846",
++        .max_speed_hz = 31250*26,
++        .chip_select = 0,
++        .platform_data = &ads_info,
++        .irq = -1,
++    },
++};
++
++/* Oscillator frequencies. These are board-specific */
++unsigned long at32_board_osc_rates[3] = {
++    [0] = 32768, /* 32.768 kHz on RTC osc */
++    [1] = 20000000, /* 20 MHz on osc0 */
++    [2] = 12000000, /* 12 MHz on osc1 */
++};
++
++/* LCD */
++#ifdef CONFIG_GRASSHOPPER_LCD
++static struct fb_videomode __initdata grasshopper_tft_modes[] = {
++    {
++        .name = "480x272 @ 60Hz",
++        .refresh = 60,
++        .xres = 480, .yres = 272,
++        .pixclock = KHZ2PICOS(9000),
++
++        .left_margin = 2, .right_margin = 2,
++        .upper_margin = 12, .lower_margin = 2,
++        .hsync_len = 41, .vsync_len = 10,
++
++        .sync = 0,
++        .vmode = FB_VMODE_NONINTERLACED,
++    },
++};
++
++static struct fb_monspecs __initdata grasshopper_default_monspecs = {
++    .manufacturer = "SHA",
++    .monitor = "LQ043T3DX02",
++    .modedb = grasshopper_tft_modes,
++    .modedb_len = ARRAY_SIZE(grasshopper_tft_modes),
++    .hfmin = 15000,
++    .hfmax = 30000,
++    .vfmin = 60,
++    .vfmax = 700,
++    .dclkmax = 90000000,
++};
++
++struct atmel_lcdfb_info __initdata grasshopper_lcdc_data = {
++    .default_bpp = 24, // Color depth
++    .default_dmacon = ATMEL_LCDC_DMAEN | ATMEL_LCDC_DMA2DEN,
++    .default_lcdcon2 = (ATMEL_LCDC_DISTYPE_TFT
++            | ATMEL_LCDC_PIXELSIZE_24
++            | ATMEL_LCDC_CLKMOD_ALWAYSACTIVE
++            | ATMEL_LCDC_MEMOR_BIG),
++    .default_monspecs = &grasshopper_default_monspecs,
++    .guard_time = 2,
++    .lcdcon_is_backlight = 1,
++};
++#endif
++
++/* MCI */
++#ifdef CONFIG_MMC_ATMELMCI
++static struct mci_platform_data __initdata mci0_data = {
++    .slot[0] = {
++        .bus_width = 4,
++        .detect_pin = GPIO_PIN_NONE,
++        .wp_pin = GPIO_PIN_NONE,
++        // .detect_pin = GPIO_PIN_PC(14), /* gpio30/sdcd */
++        // .wp_pin = GPIO_PIN_PC(15), /* gpio31/sdwp */
++    }
++};
++#endif
++
++void __init setup_board(void)
++{
++    at32_map_usart(1, 0, 0); // USART 1: /dev/ttyS0, CP2102
++    at32_setup_serial_console(0);
++
++    // grasshopper_add_spi();
++}
++
++static int __init grasshopper_init(void)
++{
++    int i;
++
++    /*
++    * grasshopper uses 32-bit SDRAM interface. Reserve the
++    * SDRAM-specific pins so that nobody messes with them.
++    */
++    at32_reserve_pin(GPIO_PIOE_BASE, ATMEL_EBI_PE_DATA_ALL);
++    at32_add_device_usba(0, NULL);
++    at32_add_device_usart(0);
++
++#ifdef CONFIG_GRASSHOPPER_LCD
++    at32_add_device_lcdc(0, &grasshopper_lcdc_data,
++        fbmem_start, fbmem_size,
++        ATMEL_LCDC_PRI_CONTROL | ATMEL_LCDC_PRI_24BIT);
++#endif
++
++#ifdef CONFIG_MMC_ATMELMCI
++//    at32_add_device_mci(0, &mci0_data); /* MMC/SD */
++#endif
++
++//    printk("registering penirq gpio-pin...\n");
++//    at32_select_gpio(PIN_TS_EXTINT, AT32_GPIOF_DEGLITCH);
++//    spi0_board_info[1].irq = gpio_to_irq(PIN_TS_EXTINT);
++//    printk("done\n");
++
++    //at32_select_periph(PIN_TS_EXTINT, GPIO_PERIPH_A, AT32_GPIOF_DEGLITCH);
++//    printk("registering SSC1 for external DAC...\n");
++//    at32_add_device_ssc(0, ATMEL_SSC_TX);
++//    printk("registering SPI for touchscreen and sound...\n");
++/*
++    struct clk *gclk;
++    struct clk *pll;
++
++    gclk = clk_get(NULL, "gclk0");
++    if (IS_ERR(gclk)) {
++        printk("failed to get clk gclk0\n");
++    } else {
++        pll = clk_get(NULL, "pll0");
++        if (IS_ERR(pll)) {
++            printk("failed to get clk pll0\n");
++        } else {
++            if (clk_set_parent(gclk, pll)) {
++                printk("failed to set pll0 as parent for DAC clock\n");
++            } else {
++                at32_select_periph(GPIO_PIOA_BASE, (1 << 30), GPIO_PERIPH_A, 0);
++                at73c213_data.dac_clk = gclk;
++            }
++        }
++    }
++*/
++//    at32_add_device_spi(0, spi0_board_info, ARRAY_SIZE(spi0_board_info));
++//    printk("done\n");
++
++    return 0;
++}
++arch_initcall(grasshopper_init);
+diff -rupdN linux-3.0.9-org//arch/avr32/configs/grasshopper_defconfig linux-3.0.9-gh//arch/avr32/configs/grasshopper_defconfig
+--- linux-3.0.9-org//arch/avr32/configs/grasshopper_defconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.0.9-gh//arch/avr32/configs/grasshopper_defconfig	2011-10-11 12:37:32.716082721 +0200
+@@ -0,0 +1,183 @@
++CONFIG_EXPERIMENTAL=y
++# CONFIG_LOCALVERSION_AUTO is not set
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_BSD_PROCESS_ACCT=y
++CONFIG_BSD_PROCESS_ACCT_V3=y
++CONFIG_DEFAULT_HOSTNAME="grasshopper"
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_RD_GZIP is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++# CONFIG_SYSCTL_SYSCALL is not set
++# CONFIG_BASE_FULL is not set
++CONFIG_EMBEDDED=y
++CONFIG_PROFILING=y
++CONFIG_OPROFILE=m
++CONFIG_KPROBES=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_IOSCHED_DEADLINE is not set
++CONFIG_BOARD_GRASSHOPPER=y
++CONFIG_AP700X_32_BIT_SMC=y
++# CONFIG_OWNERSHIP_TRACE is not set
++# CONFIG_SUSPEND is not set
++CONFIG_CPU_FREQ=y
++# CONFIG_CPU_FREQ_STAT is not set
++CONFIG_CPU_FREQ_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_GOV_ONDEMAND=y
++CONFIG_CPU_FREQ_AT32AP=y
++# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_XFRM_USER=y
++CONFIG_NET_KEY=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_ADVANCED_ROUTER=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_MROUTE=y
++CONFIG_IP_PIMSM_V1=y
++CONFIG_SYN_COOKIES=y
++CONFIG_INET_AH=y
++CONFIG_INET_ESP=y
++CONFIG_INET_IPCOMP=y
++# CONFIG_INET_LRO is not set
++CONFIG_IPV6=y
++CONFIG_INET6_AH=y
++CONFIG_INET6_ESP=y
++CONFIG_INET6_IPCOMP=y
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++# CONFIG_FW_LOADER is not set
++CONFIG_MTD=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_CFI=y
++CONFIG_MTD_JEDECPROBE=y
++CONFIG_MTD_GEN_PROBE=y
++CONFIG_MTD_CFI_AMDSTD=y
++CONFIG_MTD_RAM=y
++CONFIG_MTD_PHYSMAP=y
++CONFIG_BLK_DEV=y
++CONFIG_MTD_UBI=y
++CONFIG_MTD_UBI_WL_THRESHOLD=4096
++CONFIG_MTD_UBI_BEB_RESERVE=1
++CONFIG_MTD_DATAFLASH=m
++CONFIG_MTD_DATAFLASH_WRITE_VERIFY=y
++CONFIG_BLK_DEV=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_NBD=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_MISC_DEVICES=y
++CONFIG_ATMEL_PWM=y
++CONFIG_ATMEL_TCLIB=y
++CONFIG_ATMEL_SSC=y
++CONFIG_NETDEVICES=y
++CONFIG_TUN=m
++CONFIG_MARVELL_PHY=y
++CONFIG_DAVICOM_PHY=y
++CONFIG_NET_ETHERNET=y
++CONFIG_MACB=y
++# CONFIG_NETDEV_1000 is not set
++# CONFIG_NETDEV_10000 is not set
++CONFIG_INPUT_EVDEV=y
++# CONFIG_KEYBOARD_ATKBD is not set
++CONFIG_KEYBOARD_GPIO=y
++CONFIG_MOUSE_GPIO=y
++CONFIG_INPUT_TOUCHSCREEN=y
++CONFIG_TOUCHSCREEN_ADS7846=y
++# CONFIG_SERIO_I8042 is not set
++# CONFIG_SERIO_SERPORT is not set
++CONFIG_SERIO_AT32PSIF=y
++# CONFIG_LEGACY_PTYS is not set
++CONFIG_SERIAL_ATMEL=y
++CONFIG_SERIAL_ATMEL_CONSOLE=y
++# CONFIG_HW_RANDOM is not set
++CONFIG_I2C=m
++CONFIG_I2C_CHARDEV=m
++CONFIG_I2C_GPIO=m
++CONFIG_SPI=y
++CONFIG_SPI_ATMEL=y
++CONFIG_SPI_SPIDEV=m
++CONFIG_GPIO_SYSFS=y
++# CONFIG_HWMON is not set
++CONFIG_WATCHDOG=y
++CONFIG_AT32AP700X_WDT=y
++CONFIG_FB=y
++CONFIG_FB_ATMEL=y
++CONFIG_BACKLIGHT_LCD_SUPPORT=y
++CONFIG_LCD_CLASS_DEVICE=y
++CONFIG_LCD_PLATFORM=y
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
++CONFIG_BACKLIGHT_ATMEL_LCDC=y
++# CONFIG_BACKLIGHT_GENERIC is not set
++CONFIG_LOGO=y
++CONFIG_SOUND=y
++CONFIG_SND=y
++CONFIG_SND_AT73C213=y
++# CONFIG_USB_SUPPORT is not set
++CONFIG_MMC=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_ATMELMCI=y
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_TIMER=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
++CONFIG_LEDS_TRIGGER_GPIO=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_AT32AP700X=y
++CONFIG_DMADEVICES=y
++CONFIG_EXT2_FS=y
++CONFIG_EXT3_FS=y
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++# CONFIG_EXT3_FS_XATTR is not set
++# CONFIG_DNOTIFY is not set
++CONFIG_FUSE_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_FAT_DEFAULT_CODEPAGE=850
++CONFIG_TMPFS=y
++CONFIG_CONFIGFS_FS=m
++CONFIG_JFFS2_FS=y
++CONFIG_JFFS2_FS_WRITEBUFFER=y
++CONFIG_JFFS2_FS_WBUF_VERIFY=y
++CONFIG_JFFS2_COMPRESSION_OPTIONS=y
++CONFIG_JFFS2_ZLIB=y
++CONFIG_JFFS2_LZO=y
++CONFIG_JFFS2_RTIME=y
++CONFIG_JFFS2_RUBIN=y
++CONFIG_JFFS2_CMODE_PRIORITY=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_ROOT_NFS=y
++CONFIG_NFSD=m
++CONFIG_NFSD_V3=y
++CONFIG_CIFS=m
++CONFIG_NLS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_CODEPAGE_1250=y
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_NLS_ISO8859_15=y
++CONFIG_NLS_UTF8=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_FS=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DETECT_HUNG_TASK=y
++CONFIG_FRAME_POINTER=y
++CONFIG_CRYPTO_PCBC=m
++# CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRC_CCITT=m
++CONFIG_CRC_ITU_T=m
++CONFIG_CRC7=m
+diff -rupdN linux-3.0.9-org//arch/avr32/include/asm/kprobes.h linux-3.0.9-gh//arch/avr32/include/asm/kprobes.h
+--- linux-3.0.9-org//arch/avr32/include/asm/kprobes.h	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.9-gh//arch/avr32/include/asm/kprobes.h	2011-09-29 10:36:04.153804693 +0200
+@@ -16,6 +16,7 @@
+ typedef u16	kprobe_opcode_t;
+ #define BREAKPOINT_INSTRUCTION	0xd673	/* breakpoint */
+ #define MAX_INSN_SIZE		2
++#define MAX_STACK_SIZE		64
+ 
+ #define kretprobe_blacklist_size 0
+ 
+@@ -26,6 +27,19 @@ struct arch_specific_insn {
+ 	kprobe_opcode_t	insn[MAX_INSN_SIZE];
+ };
+ 
++struct prev_kprobe {
++	struct kprobe *kp;
++	unsigned int status;
++};
++
++/* per-cpu kprobe control block */
++struct kprobe_ctlblk {
++	unsigned int kprobe_status;
++	struct prev_kprobe prev_kprobe;
++	struct pt_regs jprobe_saved_regs;
++	char jprobes_stack[MAX_STACK_SIZE];
++};
++
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 				    unsigned long val, void *data);
+diff -rupdN linux-3.0.9-org//arch/avr32/Kconfig linux-3.0.9-gh//arch/avr32/Kconfig
+--- linux-3.0.9-org//arch/avr32/Kconfig	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.9-gh//arch/avr32/Kconfig	2011-09-29 10:36:04.154804693 +0200
+@@ -156,6 +156,15 @@ config BOARD_MERISC
+ config BOARD_MIMC200
+ 	bool "MIMC200 CPU board"
+ 	select CPU_AT32AP7000
++
++config BOARD_GRASSHOPPER
++	bool "Grasshopper Board"
++	select CPU_AT32AP7000
++	help
++	  Grasshopper is the Nickname of the AVR32-based ICNova
++	  AP7000 base board that is distributed by IN-Circuit.
++
++	  For more information see: http://www.ic-board.de/
+ endchoice
+ 
+ source "arch/avr32/boards/atstk1000/Kconfig"
+@@ -163,6 +172,7 @@ source "arch/avr32/boards/atngw100/Kconf
+ source "arch/avr32/boards/hammerhead/Kconfig"
+ source "arch/avr32/boards/favr-32/Kconfig"
+ source "arch/avr32/boards/merisc/Kconfig"
++source "arch/avr32/boards/grasshopper/Kconfig"
+ 
+ choice
+ 	prompt "Boot loader type"
+diff -rupdN linux-3.0.9-org//arch/avr32/Makefile linux-3.0.9-gh//arch/avr32/Makefile
+--- linux-3.0.9-org//arch/avr32/Makefile	2011-08-29 22:56:30.000000000 +0200
++++ linux-3.0.9-gh//arch/avr32/Makefile	2011-09-29 10:36:04.155804693 +0200
+@@ -37,6 +37,7 @@ core-$(CONFIG_BOARD_HAMMERHEAD)		+= arch
+ core-$(CONFIG_BOARD_FAVR_32)		+= arch/avr32/boards/favr-32/
+ core-$(CONFIG_BOARD_MERISC)		+= arch/avr32/boards/merisc/
+ core-$(CONFIG_BOARD_MIMC200)		+= arch/avr32/boards/mimc200/
++core-$(CONFIG_BOARD_GRASSHOPPER)	+= arch/avr32/boards/grasshopper/
+ core-$(CONFIG_LOADER_U_BOOT)		+= arch/avr32/boot/u-boot/
+ core-y					+= arch/avr32/kernel/
+ core-y					+= arch/avr32/mm/

@@ -4,11 +4,12 @@
 #
 #############################################################
 
-METACITY_VERSION = 2.16.8
+# newer versions need libcanberra-gtk and gnome-doc-utils
+METACITY_VERSION_MAJOR = 2.25
+METACITY_VERSION_MINOR = 1
+METACITY_VERSION = $(METACITY_VERSION_MAJOR).$(METACITY_VERSION_MINOR)
 METACITY_SOURCE = metacity-$(METACITY_VERSION).tar.bz2
-METACITY_SITE = http://ftp.gnome.org/pub/gnome/sources/metacity/2.16
-METACITY_INSTALL_STAGING =NO
-METACITY_INSTALL_TARGET =YES
+METACITY_SITE = http://ftp.gnome.org/pub/gnome/sources/metacity/$(METACITY_VERSION_MAJOR)
 
 METACITY_CONF_OPT = --x-includes=$(STAGING_DIR)/usr/include/X11 \
 		--x-libraries=$(STAGING_DIR)/usr/lib \
@@ -18,8 +19,10 @@ METACITY_CONF_OPT = --x-includes=$(STAGING_DIR)/usr/include/X11 \
 
 METACITY_DEPENDENCIES = libgtk2 xserver_xorg-server
 
-$(eval $(call AUTOTARGETS,package,metacity))
-
-$(METACITY_HOOK_POST_INSTALL): $(METACITY_TARGET_INSTALL_TARGET)
+define METACITY_INSTALL_XSESSION
 	install -D package/metacity/Xsession $(TARGET_DIR)/etc/X11/Xsession
-	touch $@
+endef
+
+METACITY_POST_INSTALL_TARGET_HOOKS += METACITY_INSTALL_XSESSION
+
+$(eval $(call AUTOTARGETS))

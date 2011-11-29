@@ -22,18 +22,18 @@ $(NETKITBASE_DIR)/.unpacked: $(DL_DIR)/$(NETKITBASE_SOURCE)
 	$(SED) "s/main()/main(void)/;" $(NETKITBASE_DIR)/configure
 	# don't try to run cross compiled binaries while configuring things
 	$(SED) "s~./__conftest~#./__conftest~;" $(NETKITBASE_DIR)/configure
-	toolchain/patch-kernel.sh $(NETKITBASE_DIR) package/netkitbase/ netkitbase\*.patch
+	support/scripts/apply-patches.sh $(NETKITBASE_DIR) package/netkitbase/ netkitbase\*.patch
 	touch $(NETKITBASE_DIR)/.unpacked
 
 $(NETKITBASE_DIR)/.configured: $(NETKITBASE_DIR)/.unpacked
 	(cd $(NETKITBASE_DIR); rm -f config.cache; \
-	 PATH=$(TARGET_PATH) CC=$(TARGET_CC) \
-	./configure --installroot=$(TARGET_DIR) --with-c-compiler=$(TARGET_CC) \
+	 PATH=$(TARGET_PATH) CC="$(TARGET_CC)" \
+	./configure --installroot=$(TARGET_DIR) --with-c-compiler="$(TARGET_CC)" \
 	)
 	touch $(NETKITBASE_DIR)/.configured
 
 $(NETKITBASE_DIR)/$(NETKITBASE_BINARY): $(NETKITBASE_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(NETKITBASE_DIR)
+	$(MAKE) CC="$(TARGET_CC)" -C $(NETKITBASE_DIR)
 	$(STRIPCMD) $(NETKITBASE_DIR)/$(NETKITBASE_BINARY)
 
 $(TARGET_DIR)/$(NETKITBASE_TARGET_BINARY): $(NETKITBASE_DIR)/$(NETKITBASE_BINARY)
@@ -50,7 +50,7 @@ $(TARGET_DIR)/$(NETKITBASE_TARGET_BINARY): $(NETKITBASE_DIR)/$(NETKITBASE_BINARY
 netkitbase: $(TARGET_DIR)/$(NETKITBASE_TARGET_BINARY)
 
 netkitbase-clean:
-	#$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(NETKITBASE_DIR) uninstall
+	#$(MAKE) DESTDIR=$(TARGET_DIR) CC="$(TARGET_CC)" -C $(NETKITBASE_DIR) uninstall
 	-rm -f $(TARGET_DIR)/usr/sbin/inetd $(TARGET_DIR)/etc/inetd.conf
 	-rm -f $(TARGET_DIR)/etc/inetd.conf
 	-$(MAKE) -C $(NETKITBASE_DIR) clean

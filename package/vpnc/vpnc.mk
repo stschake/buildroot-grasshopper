@@ -19,14 +19,14 @@ $(DL_DIR)/$(VPNC_SOURCE):
 
 $(VPNC_DIR)/.unpacked: $(DL_DIR)/$(VPNC_SOURCE)
 	$(VPNC_CAT) $(DL_DIR)/$(VPNC_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(VPNC_DIR) package/vpnc vpnc-$(VPNC_VERSION)\*.patch
+	support/scripts/apply-patches.sh $(VPNC_DIR) package/vpnc vpnc-$(VPNC_VERSION)\*.patch
 	touch $@
 
 $(VPNC_BINARY): $(VPNC_DIR)/.unpacked
 	rm -f $@
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) INCLUDE=$(STAGING_DIR)/usr/include \
 		CFLAGS="$(TARGET_CFLAGS)" \
-		LDFLAGS+=-lgcrypt LDFLAGS+=-lgpg-error \
+		LDFLAGS+=-lgcrypt LDFLAGS+=-lgpg-error LDFLAGS+="$(TARGET_CFLAGS)" \
 		CC="$(TARGET_CC)" -C $(VPNC_DIR)
 
 $(VPNC_TARGET_BINARY): $(VPNC_BINARY)
@@ -38,7 +38,7 @@ $(VPNC_TARGET_BINARY): $(VPNC_BINARY)
 		MANDIR=/usr/share/man \
 		VERSION=$(VPNC_VERSION) \
 		INCLUDE=$(STAGING_DIR)/usr/include \
-		LDFLAGS="-lgcrypt -lgpg-error" \
+		LDFLAGS="-lgcrypt -lgpg-error $(TARGET_CFLAGS)" \
 		-C $(VPNC_DIR) install
 	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(VPNC_TARGET_BINARY)
 

@@ -3,7 +3,7 @@
 # cairo
 #
 #############################################################
-CAIRO_VERSION = 1.6.4
+CAIRO_VERSION = 1.8.10
 CAIRO_SOURCE = cairo-$(CAIRO_VERSION).tar.gz
 CAIRO_SITE = http://cairographics.org/releases
 CAIRO_AUTORECONF = NO
@@ -79,8 +79,6 @@ else
 	CAIRO_CONF_OPT += --disable-svg
 endif
 
-HOST_CAIRO_DEPENDENCIES = host-pkg-config host-pixman host-fontconfig
-
 HOST_CAIRO_CONF_OPT = \
 		--enable-ps \
 		--enable-pdf \
@@ -89,5 +87,4 @@ HOST_CAIRO_CONF_OPT = \
 		--disable-png \
 		--disable-svg
 
-$(eval $(call AUTOTARGETS,package,cairo))
-$(eval $(call AUTOTARGETS,package,cairo,host))
+$(eval $(call AUTOTARGETS))
